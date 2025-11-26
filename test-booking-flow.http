@@ -1,0 +1,108 @@
+### Test Booking System (Phase 4)
+### Base URL
+@baseUrl = http://localhost:8080/api
+@businessSlug = test-business
+@serviceId = 219428a9-383f-4355-b990-041132f5e714
+@token = YOUR_TOKEN_HERE
+
+### ====== PUBLIC ENDPOINTS (No auth required) ======
+
+### 1. Get availability for a specific date and service
+GET {{baseUrl}}/availability/{{businessSlug}}?serviceId={{serviceId}}&date=2025-12-01
+
+### 2. Create a new booking (public)
+POST {{baseUrl}}/booking/{{businessSlug}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDatetime": "2025-12-01T10:00:00",
+  "customer": {
+    "firstName": "Jean",
+    "lastName": "Dupont",
+    "email": "jean.dupont@email.fr",
+    "phone": "0612345678",
+    "notes": "Client regulier"
+  }
+}
+
+### 3. Get appointment details by cancellation token
+GET {{baseUrl}}/booking/appointment/YOUR_CANCELLATION_TOKEN_HERE
+
+### 4. Cancel appointment (public)
+POST {{baseUrl}}/booking/cancel/YOUR_CANCELLATION_TOKEN_HERE
+
+### ====== BUSINESS ENDPOINTS (Requires auth) ======
+
+### 5. Get all appointments for a date range
+GET {{baseUrl}}/appointments?start=2025-12-01T00:00:00&end=2025-12-31T23:59:59
+Authorization: Bearer {{token}}
+
+### 6. Update appointment status
+PUT {{baseUrl}}/appointments/APPOINTMENT_ID_HERE/status?status=CONFIRMED
+Authorization: Bearer {{token}}
+
+### 7. Get all customers
+GET {{baseUrl}}/customers
+Authorization: Bearer {{token}}
+
+### 8. Search customers
+GET {{baseUrl}}/customers/search?query=jean
+Authorization: Bearer {{token}}
+
+### 9. Create a new customer
+POST {{baseUrl}}/customers
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "firstName": "Sophie",
+  "lastName": "Laurent",
+  "email": "sophie.laurent@email.fr",
+  "phone": "0612345681",
+  "notes": "Prefere les rendez-vous le matin"
+}
+
+### ====== TESTS ======
+
+### Test 1: Check availability shows all slots available
+GET {{baseUrl}}/availability/{{businessSlug}}?serviceId={{serviceId}}&date=2025-12-01
+
+### Test 2: Book a slot at 10:00
+POST {{baseUrl}}/booking/{{businessSlug}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDatetime": "2025-12-01T10:00:00",
+  "customer": {
+    "firstName": "Test",
+    "lastName": "User",
+    "email": "test@email.fr",
+    "phone": "0612345690"
+  }
+}
+
+### Test 3: Verify 10:00 slot is now unavailable
+GET {{baseUrl}}/availability/{{businessSlug}}?serviceId={{serviceId}}&date=2025-12-01
+
+### Test 4: Try to double-book same slot (should fail)
+POST {{baseUrl}}/booking/{{businessSlug}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDatetime": "2025-12-01T10:00:00",
+  "customer": {
+    "firstName": "Another",
+    "lastName": "User",
+    "email": "another@email.fr",
+    "phone": "0612345691"
+  }
+}
+
+### Test 5: Cancel the first booking (use token from Test 2 response)
+POST {{baseUrl}}/booking/cancel/YOUR_CANCELLATION_TOKEN_FROM_TEST2
+
+### Test 6: Verify 10:00 slot is available again
+GET {{baseUrl}}/availability/{{businessSlug}}?serviceId={{serviceId}}&date=2025-12-01

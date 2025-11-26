@@ -1,0 +1,123 @@
+### Test Business Management API
+### Base URL
+@baseUrl = http://localhost:8080/api
+@token = YOUR_ACCESS_TOKEN_HERE
+
+### 1. Get my business
+GET {{baseUrl}}/businesses/me
+Authorization: Bearer {{token}}
+
+### 2. Update my business
+PUT {{baseUrl}}/businesses/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "businessName": "Test Business Updated",
+  "description": "Salon de coiffure moderne",
+  "category": "HAIRDRESSER",
+  "address": "123 Rue de Paris",
+  "city": "Paris",
+  "postalCode": "75001"
+}
+
+### 3. Get business by slug (public)
+GET {{baseUrl}}/businesses/test-business
+
+### ====== SERVICES ======
+
+### 4. Create a service
+POST {{baseUrl}}/services
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Coupe Homme",
+  "description": "Coupe classique pour homme",
+  "durationMinutes": 30,
+  "price": 25.00,
+  "color": "#3B82F6"
+}
+
+### 5. List all services
+GET {{baseUrl}}/services
+Authorization: Bearer {{token}}
+
+### 6. Get service by ID
+GET {{baseUrl}}/services/SERVICE_ID_HERE
+Authorization: Bearer {{token}}
+
+### 7. Update a service
+PUT {{baseUrl}}/services/SERVICE_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Coupe Homme Premium",
+  "description": "Coupe classique avec shampooing",
+  "durationMinutes": 45,
+  "price": 30.00,
+  "color": "#3B82F6"
+}
+
+### 8. Delete a service (soft delete)
+DELETE {{baseUrl}}/services/SERVICE_ID_HERE
+Authorization: Bearer {{token}}
+
+### ====== SCHEDULES ======
+
+### 9. Create schedule for Monday
+POST {{baseUrl}}/schedules
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dayOfWeek": "MONDAY",
+  "startTime": "09:00:00",
+  "endTime": "18:00:00",
+  "slotDurationMinutes": 30
+}
+
+### 10. Create schedule for Tuesday
+POST {{baseUrl}}/schedules
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dayOfWeek": "TUESDAY",
+  "startTime": "09:00:00",
+  "endTime": "18:00:00",
+  "slotDurationMinutes": 30
+}
+
+### 11. Create schedule for Friday (different hours)
+POST {{baseUrl}}/schedules
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dayOfWeek": "FRIDAY",
+  "startTime": "10:00:00",
+  "endTime": "17:00:00",
+  "slotDurationMinutes": 30
+}
+
+### 12. List all schedules
+GET {{baseUrl}}/schedules
+Authorization: Bearer {{token}}
+
+### 13. Update a schedule
+PUT {{baseUrl}}/schedules/SCHEDULE_ID_HERE
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dayOfWeek": "MONDAY",
+  "startTime": "08:00:00",
+  "endTime": "19:00:00",
+  "slotDurationMinutes": 30
+}
+
+### 14. Delete a schedule (soft delete)
+DELETE {{baseUrl}}/schedules/SCHEDULE_ID_HERE
+Authorization: Bearer {{token}}
