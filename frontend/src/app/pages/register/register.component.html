@@ -1,0 +1,94 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Créez votre compte professionnel
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Déjà inscrit?
+        <a routerLink="/login" class="font-medium text-blue-600 hover:text-blue-500">
+          Connectez-vous
+        </a>
+      </p>
+    </div>
+
+    <form class="mt-8 space-y-6" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      @if (error) {
+        <div class="rounded-md bg-red-50 p-4">
+          <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+        </div>
+      }
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
+            <input id="firstName" type="text" formControlName="firstName" required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
+            <input id="lastName" type="text" formControlName="lastName" required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="businessName" class="block text-sm font-medium text-gray-700">Nom du business</label>
+          <input id="businessName" type="text" formControlName="businessName" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Ex: Coiffure Marie"
+          />
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input id="email" type="email" formControlName="email" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+          <div class="mt-1 flex gap-2">
+            <select formControlName="phoneCountry" required
+              class="block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              @for (country of countries; track country.code) {
+                <option [value]="country.dialCode">{{ country.dialCode }} {{ country.code }}</option>
+              }
+            </select>
+            <input id="phoneNumber" type="tel" formControlName="phoneNumber" required
+              class="block flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="612345678"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+          <input id="password" type="password" formControlName="password" required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Minimum 6 caractères"
+          />
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          [disabled]="loading || registerForm.invalid"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          @if (loading) {
+            <span>Inscription en cours...</span>
+          } @else {
+            <span>Créer mon compte</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

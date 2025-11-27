@@ -1,0 +1,175 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Booking Platform</h1>
+        </div>
+        <div class="flex items-center">
+          <ng-container *ngIf="user$ | async as user">
+            <span class="text-gray-700 mr-4">{{ user.firstName }} {{ user.lastName }}</span>
+            <button
+              (click)="logout()"
+              class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              Déconnexion
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Tabs Navigation -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        @for (tab of tabs; track tab.id) {
+          <button
+            (click)="setActiveTab(tab.id)"
+            [class]="activeTab === tab.id
+              ? 'border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'"
+          >
+            <span class="mr-2">{{ tab.icon }}</span>
+            {{ tab.name }}
+          </button>
+        }
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <!-- Overview Tab -->
+      @if (activeTab === 'overview') {
+        <ng-container *ngIf="user$ | async as user">
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Bienvenue, {{ user.firstName }} !</h2>
+            <p class="mt-1 text-sm text-gray-600">Voici un aperçu de votre activité</p>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="p-5">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <span class="text-3xl">📅</span>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt class="text-sm font-medium text-gray-500 truncate">Rendez-vous aujourd'hui</dt>
+                      <dd class="text-lg font-medium text-gray-900">0</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="p-5">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <span class="text-3xl">💼</span>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt class="text-sm font-medium text-gray-500 truncate">Services actifs</dt>
+                      <dd class="text-lg font-medium text-gray-900">0</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="p-5">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <span class="text-3xl">👥</span>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt class="text-sm font-medium text-gray-500 truncate">Clients ce mois</dt>
+                      <dd class="text-lg font-medium text-gray-900">0</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="p-5">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <span class="text-3xl">⏰</span>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt class="text-sm font-medium text-gray-500 truncate">En attente</dt>
+                      <dd class="text-lg font-medium text-gray-900">0</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Actions rapides</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <button (click)="setActiveTab('profile')" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <span class="mr-2">🏢</span>
+                Compléter mon profil
+              </button>
+              <button (click)="setActiveTab('services')" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <span class="mr-2">➕</span>
+                Ajouter un service
+              </button>
+              <button (click)="setActiveTab('schedules')" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <span class="mr-2">📅</span>
+                Configurer les horaires
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      }
+
+      <!-- Profile Tab -->
+      @if (activeTab === 'profile') {
+        <div class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Profil Business</h3>
+          <p class="text-gray-600">Gestion du profil business à venir...</p>
+        </div>
+      }
+
+      <!-- Services Tab -->
+      @if (activeTab === 'services') {
+        <div class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Gestion des Services</h3>
+          <p class="text-gray-600">Gestion des services à venir...</p>
+        </div>
+      }
+
+      <!-- Schedules Tab -->
+      @if (activeTab === 'schedules') {
+        <div class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Gestion des Horaires</h3>
+          <p class="text-gray-600">Gestion des horaires à venir...</p>
+        </div>
+      }
+
+      <!-- Appointments Tab -->
+      @if (activeTab === 'appointments') {
+        <div class="bg-white shadow rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Calendrier des Rendez-vous</h3>
+          <p class="text-gray-600">Calendrier des rendez-vous à venir...</p>
+        </div>
+      }
+    </div>
+  </main>
+</div>

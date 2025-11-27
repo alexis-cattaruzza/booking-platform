@@ -35,7 +35,8 @@ public class RegisterRequest {
     @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastName;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\+\\d{1,3}\\d{6,15}$", message = "Phone number must be in international format (+XXX...)")
     private String phone;
 
     @NotBlank(message = "Business name is required")
