@@ -4,19 +4,30 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { UserInfo } from '../../models/auth.model';
+import { BusinessProfileComponent } from '../../components/business-profile/business-profile.component';
+import { ServicesManagementComponent } from '../../components/services-management/services-management.component';
+import { SchedulesManagementComponent } from '../../components/schedules-management/schedules-management.component';
+import { ServiceService } from '../../services/service.service';
 
 type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   user$: Observable<UserInfo | null>;
   activeTab: TabType = 'overview';
+
+  stats = {
+    appointmentsToday: 0,
+    activeServices: 0,
+    customersThisMonth: 0,
+    pendingAppointments: 0
+  };
 
   tabs = [
     { id: 'overview' as TabType, name: 'Vue d\'ensemble', icon: '📊' },
@@ -28,12 +39,23 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private serviceService: ServiceService
   ) {
     this.user$ = this.authService.currentUser;
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadStats();
+  }
+
+  loadStats() {
+    this.serviceService.getMyServices().subscribe({
+      next: (services) => {
+        this.stats.activeServices = services.filter(s => s.isActive).length;
+      }
+    });
+  }
 
   setActiveTab(tab: TabType) {
     this.activeTab = tab;

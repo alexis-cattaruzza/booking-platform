@@ -1,0 +1,210 @@
+<div class="bg-white shadow rounded-lg p-6">
+  <div class="mb-6">
+    <h3 class="text-lg font-medium text-gray-900">Profil Business</h3>
+    <p class="mt-1 text-sm text-gray-600">
+      Gérez les informations de votre établissement
+    </p>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center items-center py-8">
+      <div class="text-gray-600">Chargement...</div>
+    </div>
+  }
+
+  @if (!loading) {
+    @if (error) {
+      <div class="mb-4 rounded-md bg-red-50 p-4">
+        <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+      </div>
+    }
+
+    @if (success) {
+      <div class="mb-4 rounded-md bg-green-50 p-4">
+        <h3 class="text-sm font-medium text-green-800">{{ success }}</h3>
+      </div>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <!-- Business Name & Category -->
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-6">
+        <div>
+          <label for="businessName" class="block text-sm font-medium text-gray-700">
+            Nom du business <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="businessName"
+            type="text"
+            formControlName="businessName"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+          @if (profileForm.get('businessName')?.invalid && profileForm.get('businessName')?.touched) {
+            <p class="mt-1 text-sm text-red-600">Le nom du business est requis</p>
+          }
+        </div>
+
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700">
+            Catégorie
+          </label>
+          <select
+            id="category"
+            formControlName="category"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Sélectionnez une catégorie</option>
+            @for (cat of categories; track cat.value) {
+              <option [value]="cat.value">{{ cat.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <label for="description" class="block text-sm font-medium text-gray-700">
+          Description
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="4"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Décrivez votre activité, vos services, etc."
+        ></textarea>
+        <p class="mt-1 text-sm text-gray-500">
+          {{ profileForm.get('description')?.value?.length || 0 }} / 1000 caractères
+        </p>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="mb-6">
+        <h4 class="text-md font-medium text-gray-900 mb-4">Coordonnées</h4>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700">
+              Téléphone
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+33612345678"
+            />
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="contact@exemple.fr"
+            />
+            @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+              <p class="mt-1 text-sm text-red-600">Email invalide</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Address Information -->
+      <div class="mb-6">
+        <h4 class="text-md font-medium text-gray-900 mb-4">Adresse</h4>
+
+        <div class="space-y-4">
+          <div>
+            <label for="address" class="block text-sm font-medium text-gray-700">
+              Adresse
+            </label>
+            <input
+              id="address"
+              type="text"
+              formControlName="address"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="123 Rue de la République"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div class="sm:col-span-2">
+              <label for="city" class="block text-sm font-medium text-gray-700">
+                Ville
+              </label>
+              <input
+                id="city"
+                type="text"
+                formControlName="city"
+                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Paris"
+              />
+            </div>
+
+            <div>
+              <label for="postalCode" class="block text-sm font-medium text-gray-700">
+                Code postal
+              </label>
+              <input
+                id="postalCode"
+                type="text"
+                formControlName="postalCode"
+                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="75001"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo URL -->
+      <div class="mb-6">
+        <label for="logoUrl" class="block text-sm font-medium text-gray-700">
+          URL du logo
+        </label>
+        <input
+          id="logoUrl"
+          type="url"
+          formControlName="logoUrl"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          placeholder="https://exemple.fr/logo.png"
+        />
+        <p class="mt-1 text-sm text-gray-500">
+          Lien vers votre logo (optionnel)
+        </p>
+      </div>
+
+      <!-- Business Info Display -->
+      @if (business) {
+        <div class="mb-6 p-4 bg-gray-50 rounded-md">
+          <h4 class="text-sm font-medium text-gray-900 mb-2">Informations du compte</h4>
+          <div class="text-sm text-gray-600 space-y-1">
+            <p><strong>Slug:</strong> {{ business.slug }}</p>
+            <p><strong>Créé le:</strong> {{ business.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><strong>Dernière mise à jour:</strong> {{ business.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p><strong>Statut:</strong> <span [class]="business.isActive ? 'text-green-600' : 'text-red-600'">{{ business.isActive ? 'Actif' : 'Inactif' }}</span></p>
+          </div>
+        </div>
+      }
+
+      <!-- Submit Button -->
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          [disabled]="profileForm.invalid || saving"
+          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          @if (saving) {
+            <span>Enregistrement...</span>
+          } @else {
+            <span>Enregistrer les modifications</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

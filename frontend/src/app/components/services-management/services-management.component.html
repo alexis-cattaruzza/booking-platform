@@ -1,0 +1,219 @@
+<div class="bg-white shadow rounded-lg p-6">
+  <div class="mb-6 flex justify-between items-center">
+    <div>
+      <h3 class="text-lg font-medium text-gray-900">Gestion des Services</h3>
+      <p class="mt-1 text-sm text-gray-600">Créez et gérez vos services proposés aux clients</p>
+    </div>
+    @if (!showForm) {
+      <button
+        (click)="openCreateForm()"
+        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+      >
+        <span class="mr-2">+</span>
+        Nouveau service
+      </button>
+    }
+  </div>
+
+  @if (error) {
+    <div class="mb-4 rounded-md bg-red-50 p-4">
+      <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+    </div>
+  }
+
+  @if (success) {
+    <div class="mb-4 rounded-md bg-green-50 p-4">
+      <h3 class="text-sm font-medium text-green-800">{{ success }}</h3>
+    </div>
+  }
+
+  <!-- Service Form -->
+  @if (showForm) {
+    <div class="mb-6 p-4 bg-gray-50 rounded-md">
+      <h4 class="text-md font-medium text-gray-900 mb-4">
+        {{ editingService ? 'Modifier le service' : 'Nouveau service' }}
+      </h4>
+
+      <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">
+              Nom du service <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Ex: Coupe homme"
+            />
+          </div>
+
+          <div>
+            <label for="color" class="block text-sm font-medium text-gray-700">
+              Couleur
+            </label>
+            <select
+              id="color"
+              formControlName="color"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              @for (color of colors; track color.value) {
+                <option [value]="color.value">{{ color.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="3"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Décrivez ce service..."
+          ></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4">
+          <div>
+            <label for="durationMinutes" class="block text-sm font-medium text-gray-700">
+              Durée (minutes) <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="durationMinutes"
+              type="number"
+              formControlName="durationMinutes"
+              min="5"
+              max="480"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label for="price" class="block text-sm font-medium text-gray-700">
+              Prix (€) <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="price"
+              type="number"
+              formControlName="price"
+              min="0"
+              step="0.01"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div class="flex items-end">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span class="ml-2 text-sm text-gray-700">Service actif</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="cancelForm()"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            [disabled]="serviceForm.invalid || saving"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Services List -->
+  @if (loading) {
+    <div class="flex justify-center items-center py-8">
+      <div class="text-gray-600">Chargement...</div>
+    </div>
+  }
+
+  @if (!loading && services.length === 0 && !showForm) {
+    <div class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun service</h3>
+      <p class="mt-1 text-sm text-gray-500">Commencez par créer votre premier service.</p>
+      <div class="mt-6">
+        <button
+          (click)="openCreateForm()"
+          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+        >
+          <span class="mr-2">+</span>
+          Créer un service
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!loading && services.length > 0 && !showForm) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (service of services; track service.id) {
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center">
+              <div
+                class="w-4 h-4 rounded-full mr-2"
+                [style.background-color]="service.color"
+              ></div>
+              <h4 class="text-md font-medium text-gray-900">{{ service.name }}</h4>
+            </div>
+            @if (!service.isActive) {
+              <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                Inactif
+              </span>
+            }
+          </div>
+
+          @if (service.description) {
+            <p class="text-sm text-gray-600 mb-3">{{ service.description }}</p>
+          }
+
+          <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+            <span class="flex items-center">
+              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              {{ formatDuration(service.durationMinutes) }}
+            </span>
+            <span class="text-lg font-semibold text-gray-900">{{ formatPrice(service.price) }}</span>
+          </div>
+
+          <div class="flex space-x-2">
+            <button
+              (click)="openEditForm(service)"
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Modifier
+            </button>
+            <button
+              (click)="deleteService(service)"
+              class="flex-1 px-3 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50"
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

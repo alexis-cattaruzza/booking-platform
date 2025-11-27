@@ -25,6 +25,7 @@ export interface UpdateBusinessRequest {
   postalCode?: string;
   phone?: string;
   email?: string;
+  logoUrl?: string;
 }
 
 export interface Service {

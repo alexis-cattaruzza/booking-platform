@@ -6,12 +6,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Skip auth for public endpoints
+  // Public endpoints (aligned with backend SecurityConfig)
   const isPublicEndpoint = req.url.includes('/auth/') ||
                            req.url.includes('/booking/') ||
-                           req.url.includes('/availability/') ||
-                           req.url.includes('/businesses/') && req.method === 'GET';
+                           req.url.includes('/availability/');
 
+  // Add token to all private endpoints
   if (token && !isPublicEndpoint) {
     req = req.clone({
       setHeaders: {
