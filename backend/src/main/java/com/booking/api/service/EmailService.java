@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -113,8 +114,9 @@ public class EmailService {
 
     /**
      * Send email with HTML content
+     * @throws UnsupportedEncodingException 
      */
-    private void sendEmail(String to, String subject, String htmlContent) throws MessagingException {
+    private void sendEmail(String to, String subject, String htmlContent) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
