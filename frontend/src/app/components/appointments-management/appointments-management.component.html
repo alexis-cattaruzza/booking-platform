@@ -1,0 +1,340 @@
+<div class="bg-white shadow rounded-lg p-6">
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-medium text-gray-900">Gestion des Rendez-vous</h3>
+        <p class="mt-1 text-sm text-gray-600">Visualisez et gérez vos rendez-vous</p>
+      </div>
+
+      <!-- View Mode Toggle -->
+      <button
+        (click)="toggleViewMode()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      >
+        @if (viewMode === 'list') {
+          <span>📅 Vue Calendrier</span>
+        } @else {
+          <span>📋 Vue Liste</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <div class="mb-4 rounded-md bg-red-50 p-4">
+      <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+    </div>
+  }
+
+  @if (success) {
+    <div class="mb-4 rounded-md bg-green-50 p-4">
+      <h3 class="text-sm font-medium text-green-800">{{ success }}</h3>
+    </div>
+  }
+
+  <!-- Statistics Cards -->
+  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+    <div class="bg-blue-50 rounded-lg p-4">
+      <p class="text-xs text-blue-600 font-medium">Total</p>
+      <p class="text-2xl font-bold text-blue-900">{{ stats.total }}</p>
+    </div>
+    <div class="bg-green-50 rounded-lg p-4">
+      <p class="text-xs text-green-600 font-medium">Aujourd'hui</p>
+      <p class="text-2xl font-bold text-green-900">{{ stats.today }}</p>
+    </div>
+    <div class="bg-purple-50 rounded-lg p-4">
+      <p class="text-xs text-purple-600 font-medium">Cette semaine</p>
+      <p class="text-2xl font-bold text-purple-900">{{ stats.thisWeek }}</p>
+    </div>
+    <div class="bg-yellow-50 rounded-lg p-4">
+      <p class="text-xs text-yellow-600 font-medium">En attente</p>
+      <p class="text-2xl font-bold text-yellow-900">{{ stats.pending }}</p>
+    </div>
+    <div class="bg-indigo-50 rounded-lg p-4">
+      <p class="text-xs text-indigo-600 font-medium">Confirmés</p>
+      <p class="text-2xl font-bold text-indigo-900">{{ stats.confirmed }}</p>
+    </div>
+    <div class="bg-emerald-50 rounded-lg p-4">
+      <p class="text-xs text-emerald-600 font-medium">Revenu total</p>
+      <p class="text-2xl font-bold text-emerald-900">{{ formatPrice(stats.totalRevenue) }}</p>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearchChange()"
+      placeholder="Rechercher par nom, email, téléphone ou service..."
+      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  <!-- Filters -->
+  <div class="mb-6 flex flex-wrap gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Période</label>
+      <div class="flex gap-2 flex-wrap">
+        <button
+          (click)="onFilterChange('all')"
+          [class]="selectedFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+          class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50"
+        >
+          Tous
+        </button>
+        <button
+          (click)="onFilterChange('today')"
+          [class]="selectedFilter === 'today' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+          class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50"
+        >
+          Aujourd'hui
+        </button>
+        <button
+          (click)="onFilterChange('week')"
+          [class]="selectedFilter === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+          class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50"
+        >
+          Cette semaine
+        </button>
+        <button
+          (click)="onFilterChange('upcoming')"
+          [class]="selectedFilter === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+          class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50"
+        >
+          À venir
+        </button>
+        <button
+          (click)="onFilterChange('past')"
+          [class]="selectedFilter === 'past' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+          class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-50"
+        >
+          Passés
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+      <select
+        id="statusFilter"
+        [value]="selectedStatus"
+        (change)="onStatusChange($any($event.target).value)"
+        class="block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      >
+        @for (option of statusOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex justify-center items-center py-8">
+      <div class="text-gray-600">Chargement...</div>
+    </div>
+  }
+
+  <!-- CALENDAR VIEW -->
+  @if (!loading && viewMode === 'calendar') {
+    <div>
+      <!-- Week Navigation -->
+      <div class="mb-4 flex items-center justify-between">
+        <button
+          (click)="previousWeek()"
+          class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          ← Semaine précédente
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-medium text-gray-900">{{ formatWeekRange() }}</span>
+          <button
+            (click)="goToToday()"
+            class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+          >
+            Aujourd'hui
+          </button>
+        </div>
+        <button
+          (click)="nextWeek()"
+          class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          Semaine suivante →
+        </button>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="grid grid-cols-7 gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50">
+        @for (day of calendarDays; track $index) {
+          <div
+            [class]="isToday(day) ? 'bg-blue-50 border-2 border-blue-500' : 'bg-white border border-gray-200'"
+            class="rounded-lg p-2 min-h-[200px]"
+          >
+            <!-- Day Header -->
+            <div class="text-center mb-2 pb-2 border-b border-gray-200">
+              <div class="text-xs font-medium text-gray-600">{{ getDayName(day) }}</div>
+              <div
+                [class]="isToday(day) ? 'text-blue-600 font-bold' : 'text-gray-900'"
+                class="text-lg"
+              >
+                {{ getDayNumber(day) }}
+              </div>
+              <div class="text-xs text-gray-500">{{ getMonthName(day) }}</div>
+            </div>
+
+            <!-- Appointments for this day -->
+            <div class="space-y-1">
+              @for (apt of getAppointmentsForDay(day); track apt.id) {
+                <div
+                  class="text-xs p-2 rounded cursor-pointer hover:shadow-md transition-shadow"
+                  [style.background-color]="apt.service.color + '20'"
+                  [style.border-left]="'3px solid ' + apt.service.color"
+                >
+                  <div class="font-medium text-gray-900">{{ formatTime(apt.appointmentDatetime) }}</div>
+                  <div class="text-gray-700">{{ apt.service.name }}</div>
+                  <div class="text-gray-600">{{ apt.customer.firstName }} {{ apt.customer.lastName }}</div>
+                  <div class="mt-1">
+                    <span
+                      [ngClass]="{
+                        'bg-yellow-100 text-yellow-800': getStatusColor(apt.status) === 'yellow',
+                        'bg-blue-100 text-blue-800': getStatusColor(apt.status) === 'blue',
+                        'bg-green-100 text-green-800': getStatusColor(apt.status) === 'green',
+                        'bg-red-100 text-red-800': getStatusColor(apt.status) === 'red',
+                        'bg-orange-100 text-orange-800': getStatusColor(apt.status) === 'orange'
+                      }"
+                      class="inline-block px-1 py-0.5 rounded text-[10px] font-medium"
+                    >
+                      {{ getStatusLabel(apt.status) }}
+                    </span>
+                  </div>
+                </div>
+              }
+              @if (getAppointmentsForDay(day).length === 0) {
+                <div class="text-xs text-gray-400 text-center py-4">Aucun RDV</div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- LIST VIEW -->
+  @if (!loading && viewMode === 'list') {
+    @if (filteredAppointments.length === 0) {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun rendez-vous</h3>
+        <p class="mt-1 text-sm text-gray-500">Aucun rendez-vous trouvé pour les filtres sélectionnés.</p>
+      </div>
+    }
+
+    @if (filteredAppointments.length > 0) {
+      <div class="space-y-4">
+        @for (appointment of filteredAppointments; track appointment.id) {
+          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <div
+                    class="w-1 h-12 rounded"
+                    [style.background-color]="appointment.service.color"
+                  ></div>
+                  <div>
+                    <h4 class="text-lg font-medium text-gray-900">{{ appointment.service.name }}</h4>
+                    <p class="text-sm text-gray-600">
+                      {{ formatDate(appointment.appointmentDatetime) }} à {{ formatTime(appointment.appointmentDatetime) }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="ml-4 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <p class="text-xs text-gray-500">Client</p>
+                    <p class="text-sm font-medium text-gray-900">
+                      {{ appointment.customer.firstName }} {{ appointment.customer.lastName }}
+                    </p>
+                    <p class="text-xs text-gray-600">{{ appointment.customer.email }}</p>
+                    <p class="text-xs text-gray-600">{{ appointment.customer.phone }}</p>
+                  </div>
+
+                  <div>
+                    <p class="text-xs text-gray-500">Détails</p>
+                    <p class="text-sm text-gray-700">Durée: {{ appointment.durationMinutes }} min</p>
+                    <p class="text-sm text-gray-700">Prix: {{ formatPrice(appointment.price) }}</p>
+                    @if (appointment.notes) {
+                      <p class="text-xs text-gray-600 mt-1">Note: {{ appointment.notes }}</p>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="ml-4 flex flex-col items-end gap-2">
+                <!-- Status Badge -->
+                <span
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-800': getStatusColor(appointment.status) === 'yellow',
+                    'bg-blue-100 text-blue-800': getStatusColor(appointment.status) === 'blue',
+                    'bg-green-100 text-green-800': getStatusColor(appointment.status) === 'green',
+                    'bg-red-100 text-red-800': getStatusColor(appointment.status) === 'red',
+                    'bg-orange-100 text-orange-800': getStatusColor(appointment.status) === 'orange',
+                    'bg-gray-100 text-gray-800': getStatusColor(appointment.status) === 'gray'
+                  }"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                >
+                  {{ getStatusLabel(appointment.status) }}
+                </span>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-1 mt-2">
+                  @if (canConfirm(appointment)) {
+                    <button
+                      (click)="updateStatus(appointment, 'CONFIRMED')"
+                      class="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded"
+                    >
+                      Confirmer
+                    </button>
+                  }
+                  @if (canComplete(appointment)) {
+                    <button
+                      (click)="updateStatus(appointment, 'COMPLETED')"
+                      class="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded"
+                    >
+                      Terminer
+                    </button>
+                  }
+                  @if (canCancel(appointment)) {
+                    <button
+                      (click)="updateStatus(appointment, 'CANCELLED')"
+                      class="px-3 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded"
+                    >
+                      Annuler
+                    </button>
+                  }
+                  @if (canComplete(appointment)) {
+                    <button
+                      (click)="updateStatus(appointment, 'NO_SHOW')"
+                      class="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded"
+                    >
+                      Absent
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Summary -->
+      <div class="mt-6 pt-4 border-t border-gray-200">
+        <p class="text-sm text-gray-600">
+          {{ filteredAppointments.length }} rendez-vous trouvé(s)
+        </p>
+      </div>
+    }
+  }
+</div>

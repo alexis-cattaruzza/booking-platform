@@ -66,3 +66,34 @@ export interface ScheduleRequest {
   slotDurationMinutes: number;
   isActive?: boolean;
 }
+
+export interface Appointment {
+  id: string;
+  appointmentDatetime: string;
+  durationMinutes: number;
+  price: number;
+  status: AppointmentStatus;
+  notes: string | null;
+  cancellationToken: string | null;
+  service: ServiceInfo;
+  customer: CustomerInfo;
+  createdAt: string;
+}
+
+export interface ServiceInfo {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  price: number;
+  color: string;
+}
+
+export interface CustomerInfo {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';

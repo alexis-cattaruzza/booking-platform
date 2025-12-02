@@ -7,14 +7,16 @@ import { UserInfo } from '../../models/auth.model';
 import { BusinessProfileComponent } from '../../components/business-profile/business-profile.component';
 import { ServicesManagementComponent } from '../../components/services-management/services-management.component';
 import { SchedulesManagementComponent } from '../../components/schedules-management/schedules-management.component';
+import { AppointmentsManagementComponent } from '../../components/appointments-management/appointments-management.component';
 import { ServiceService } from '../../services/service.service';
+import { Service } from '../../models/business.model';
 
 type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent],
+  imports: [CommonModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -50,9 +52,9 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStats() {
-    this.serviceService.getMyServices().subscribe({
-      next: (services) => {
-        this.stats.activeServices = services.filter(s => s.isActive).length;
+    this.serviceService.getServices().subscribe({
+      next: (services: Service[]) => {
+        this.stats.activeServices = services.filter((s: Service) => s.isActive).length;
       }
     });
   }

@@ -10,12 +10,8 @@ export class ServiceService {
 
   constructor(private api: ApiService) { }
 
-  getMyServices(): Observable<Service[]> {
+  getServices(): Observable<Service[]> {
     return this.api.get<Service[]>('/services');
-  }
-
-  getServiceById(id: string): Observable<Service> {
-    return this.api.get<Service>(`/services/${id}`);
   }
 
   createService(request: ServiceRequest): Observable<Service> {

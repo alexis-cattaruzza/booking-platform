@@ -55,12 +55,12 @@ export class ServicesManagementComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.serviceService.getMyServices().subscribe({
-      next: (services) => {
-        this.services = services.sort((a, b) => a.displayOrder - b.displayOrder);
+    this.serviceService.getServices().subscribe({
+      next: (services: Service[]) => {
+        this.services = services.sort((a: Service, b: Service) => a.displayOrder - b.displayOrder);
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error?.message || 'Erreur lors du chargement des services';
         this.loading = false;
       }
@@ -125,7 +125,7 @@ export class ServicesManagementComponent implements OnInit {
         this.loadServices();
         setTimeout(() => this.success = '', 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error?.message || 'Erreur lors de l\'enregistrement du service';
         this.saving = false;
       }
@@ -143,7 +143,7 @@ export class ServicesManagementComponent implements OnInit {
         this.loadServices();
         setTimeout(() => this.success = '', 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error?.message || 'Erreur lors de la suppression du service';
       }
     });

@@ -2,17 +2,33 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
+/**
+ * Authentication interceptor
+ * Adds JWT token to protected endpoints only
+ */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Public endpoints (aligned with backend SecurityConfig)
-  const isPublicEndpoint = req.url.includes('/auth/') ||
-                           req.url.includes('/booking/') ||
-                           req.url.includes('/availability/');
+  // Define PUBLIC endpoints explicitly (whitelist approach for security)
+  const publicEndpoints = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/booking/',           // Customer booking creation
+    '/api/availability/',       // Check availability
+  ];
 
-  // Add token to all private endpoints
-  if (token && !isPublicEndpoint) {
+  // Check if the request is to a public endpoint
+  const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
+
+  // Special case: /api/businesses/{slug} and /api/businesses/{slug}/services are public
+  // but /api/businesses/me is PROTECTED
+  const isPublicBusinessEndpoint = req.url.includes('/api/businesses/') &&
+                                    !req.url.includes('/api/businesses/me') &&
+                                    !req.url.endsWith('/api/businesses');
+
+  // Add token to all PROTECTED endpoints (default behavior for security)
+  if (token && !isPublicEndpoint && !isPublicBusinessEndpoint) {
     req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
