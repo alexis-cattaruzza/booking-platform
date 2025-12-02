@@ -27,6 +27,7 @@ public class AppointmentService {
     private final BusinessRepository businessRepository;
     private final ServiceRepository serviceRepository;
     private final CustomerService customerService;
+    private final EmailService emailService;
 
     /**
      * Create a new appointment (public booking)
@@ -107,6 +108,9 @@ public class AppointmentService {
         customer.setTotalAppointments(customer.getTotalAppointments() + 1);
         customer.setLastAppointmentAt(LocalDateTime.now());
 
+        // Send confirmation email
+        emailService.sendBookingConfirmation(appointment);
+
         return toAppointmentResponse(appointment);
     }
 
@@ -166,6 +170,9 @@ public class AppointmentService {
 
         appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        // Send cancellation email
+        emailService.sendCancellationEmail(appointment);
 
         log.info("Appointment cancelled: {}", appointment.getId());
     }

@@ -2,15 +2,20 @@ package com.booking.api.service;
 
 import com.booking.api.dto.request.UpdateBusinessRequest;
 import com.booking.api.dto.response.BusinessResponse;
+import com.booking.api.dto.response.ServiceResponse;
 import com.booking.api.model.Business;
 import com.booking.api.model.User;
 import com.booking.api.repository.BusinessRepository;
+import com.booking.api.repository.ServiceRepository;
 import com.booking.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +24,7 @@ public class BusinessService {
 
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
+    private final ServiceRepository serviceRepository;
 
     /**
      * Récupère le business de l'utilisateur connecté
@@ -99,6 +105,41 @@ public class BusinessService {
         log.info("Business updated successfully: {}", business.getId());
 
         return mapToResponse(business);
+    }
+
+    /**
+     * Récupère les services actifs d'un business public
+     */
+    public List<ServiceResponse> getBusinessServices(String slug) {
+        log.info("Getting services for business with slug: {}", slug);
+
+        Business business = businessRepository.findBySlug(slug)
+                .orElseThrow(() -> new RuntimeException("Business not found with slug: " + slug));
+
+        if (!business.getIsActive()) {
+            throw new RuntimeException("Business is not active");
+        }
+
+        List<com.booking.api.model.Service> services = serviceRepository.findByBusinessIdAndIsActiveTrue(business.getId());
+
+        return services.stream()
+                .map(this::mapServiceToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ServiceResponse mapServiceToResponse(com.booking.api.model.Service service) {
+        return ServiceResponse.builder()
+                .id(service.getId())
+                .name(service.getName())
+                .description(service.getDescription())
+                .durationMinutes(service.getDurationMinutes())
+                .price(service.getPrice())
+                .color(service.getColor())
+                .isActive(service.getIsActive())
+                .displayOrder(service.getDisplayOrder())
+                .createdAt(service.getCreatedAt())
+                .updatedAt(service.getUpdatedAt())
+                .build();
     }
 
     private BusinessResponse mapToResponse(Business business) {

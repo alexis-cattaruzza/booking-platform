@@ -71,21 +71,34 @@ public class AvailabilityService {
 
         // Get schedule for the day of week
         DayOfWeek dayOfWeek = date.getDayOfWeek();
+        log.info("Looking for schedule on {} for business {}", dayOfWeek, business.getId());
+
         Schedule schedule = scheduleRepository
                 .findByBusinessIdAndDayOfWeek(business.getId(), dayOfWeek)
                 .orElse(null);
 
         if (schedule == null || !schedule.getIsActive()) {
-            log.info("No active schedule for {} on {}", business.getBusinessName(), dayOfWeek);
+            log.warn("No active schedule found for {} on {} (schedule: {}, isActive: {})",
+                    business.getBusinessName(), dayOfWeek,
+                    schedule != null ? schedule.getId() : "null",
+                    schedule != null ? schedule.getIsActive() : "N/A");
             return AvailabilityResponse.builder()
                     .date(date)
                     .availableSlots(new ArrayList<>())
                     .build();
         }
 
+        log.info("Found schedule: {} - {} to {} (slot duration: {}min)",
+                schedule.getId(), schedule.getStartTime(), schedule.getEndTime(),
+                schedule.getSlotDurationMinutes());
+
         // Generate time slots
         List<AvailabilityResponse.TimeSlot> slots = generateTimeSlots(
                 schedule, service, date, business.getId());
+
+        long availableCount = slots.stream().filter(AvailabilityResponse.TimeSlot::isAvailable).count();
+        log.info("Generated {} total slots, {} available for date {}",
+                slots.size(), availableCount, date);
 
         return AvailabilityResponse.builder()
                 .date(date)

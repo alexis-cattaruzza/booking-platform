@@ -2,12 +2,15 @@ package com.booking.api.controller;
 
 import com.booking.api.dto.request.UpdateBusinessRequest;
 import com.booking.api.dto.response.BusinessResponse;
+import com.booking.api.dto.response.ServiceResponse;
 import com.booking.api.service.BusinessService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/businesses")
@@ -48,5 +51,16 @@ public class BusinessController {
         log.info("GET /api/businesses/{}", slug);
         BusinessResponse response = businessService.getBusinessBySlug(slug);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * GET /api/businesses/{slug}/services
+     * Récupère les services actifs d'un business public
+     */
+    @GetMapping("/{slug}/services")
+    public ResponseEntity<List<ServiceResponse>> getBusinessServices(@PathVariable String slug) {
+        log.info("GET /api/businesses/{}/services", slug);
+        List<ServiceResponse> services = businessService.getBusinessServices(slug);
+        return ResponseEntity.ok(services);
     }
 }
