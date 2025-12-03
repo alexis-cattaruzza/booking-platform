@@ -33,4 +33,6 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
     List<Customer> searchCustomers(@Param("businessId") UUID businessId, @Param("search") String search);
 
     long countByBusinessId(UUID businessId);
+
+    Optional<Customer> findByEmail(String email);
 }

@@ -4,7 +4,6 @@ import com.booking.api.dto.response.AvailabilityResponse;
 import com.booking.api.model.Appointment;
 import com.booking.api.model.Business;
 import com.booking.api.model.Schedule;
-import com.booking.api.model.ScheduleException;
 import com.booking.api.repository.AppointmentRepository;
 import com.booking.api.repository.BusinessRepository;
 import com.booking.api.repository.ScheduleExceptionRepository;

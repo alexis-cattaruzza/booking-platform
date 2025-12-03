@@ -18,4 +18,6 @@ public interface ServiceRepository extends JpaRepository<Service, UUID> {
     List<Service> findByBusinessIdOrderByDisplayOrderAsc(UUID businessId);
 
     long countByBusinessIdAndIsActiveTrue(UUID businessId);
+
+    List<Service> findByBusinessIdOrderByNameAsc(UUID businessId);
 }
