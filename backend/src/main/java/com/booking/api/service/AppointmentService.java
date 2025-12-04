@@ -2,6 +2,9 @@ package com.booking.api.service;
 
 import com.booking.api.dto.request.AppointmentRequest;
 import com.booking.api.dto.response.AppointmentResponse;
+import com.booking.api.exception.BadRequestException;
+import com.booking.api.exception.ConflictException;
+import com.booking.api.exception.NotFoundException;
 import com.booking.api.model.Appointment;
 import com.booking.api.model.Business;
 import com.booking.api.model.Customer;
@@ -10,6 +13,7 @@ import com.booking.api.repository.BusinessRepository;
 import com.booking.api.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,18 +38,14 @@ public class AppointmentService {
      * Uses pessimistic locking to prevent double-booking
      */
     @Transactional
-    public AppointmentResponse createAppointment(String businessSlug, AppointmentRequest request) {
-        log.info("Creating appointment for business: {} at {}",
-                businessSlug, request.getAppointmentDatetime());
-
-        // Get business
+    public AppointmentResponse createAppointment(String businessSlug, AppointmentRequest request) {        // Get business
         Business business = businessRepository.findBySlug(businessSlug)
-                .orElseThrow(() -> new RuntimeException("Business not found"));
+                .orElseThrow(() -> new NotFoundException("Business not found"));
 
         // Get service
         com.booking.api.model.Service service = serviceRepository
                 .findByIdAndBusinessId(request.getServiceId(), business.getId())
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() -> new NotFoundException("Service not found"));
 
         if (!service.getIsActive()) {
             throw new RuntimeException("Service is not active");
@@ -77,8 +77,7 @@ public class AppointmentService {
             // Check for overlap: start1 < end2 AND start2 < end1
             if (appointmentStart.isBefore(existingEnd) &&
                     existingStart.isBefore(appointmentEnd)) {
-                log.warn("Time slot conflict detected for {}", appointmentStart);
-                throw new RuntimeException("This time slot is no longer available");
+                throw new ConflictException("This time slot is no longer available");
             }
         }
 
@@ -102,7 +101,6 @@ public class AppointmentService {
                 .build();
 
         appointment = appointmentRepository.save(appointment);
-        log.info("Appointment created with ID: {}", appointment.getId());
 
         // Update customer stats
         customer.setTotalAppointments(customer.getTotalAppointments() + 1);
@@ -120,8 +118,6 @@ public class AppointmentService {
             LocalDateTime start,
             LocalDateTime end) {
 
-        log.info("Getting appointments for business: {} from {} to {}", businessId, start, end);
-
         return appointmentRepository
                 .findByBusinessIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
                         businessId, start, end)
@@ -134,38 +130,31 @@ public class AppointmentService {
     public AppointmentResponse updateAppointmentStatus(
             UUID appointmentId,
             Appointment.AppointmentStatus newStatus) {
-
-        log.info("Updating appointment {} to status {}", appointmentId, newStatus);
-
         Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
 
         appointment.setStatus(newStatus);
         appointment = appointmentRepository.save(appointment);
-
-        log.info("Appointment status updated: {}", appointmentId);
 
         return toAppointmentResponse(appointment);
     }
 
     @Transactional
     public void cancelAppointment(String cancellationToken) {
-        log.info("Cancelling appointment with token: {}", cancellationToken);
-
         Appointment appointment = appointmentRepository.findByCancellationToken(cancellationToken)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
 
         if (appointment.getStatus() == Appointment.AppointmentStatus.CANCELLED) {
-            throw new RuntimeException("Appointment is already cancelled");
+            throw new ConflictException("Appointment is already cancelled");
         }
 
         if (appointment.getStatus() == Appointment.AppointmentStatus.COMPLETED) {
-            throw new RuntimeException("Cannot cancel a completed appointment");
+            throw new BadRequestException("Cannot cancel a completed appointment");
         }
 
         // Check if appointment is in the past
         if (appointment.getAppointmentDatetime().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Cannot cancel a past appointment");
+            throw new BadRequestException("Cannot cancel a past appointment");
         }
 
         appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
@@ -173,17 +162,12 @@ public class AppointmentService {
 
         // Send cancellation email
         emailService.sendCancellationEmail(appointment);
-
-        log.info("Appointment cancelled: {}", appointment.getId());
     }
 
     @Transactional(readOnly = true)
-    public AppointmentResponse getAppointmentByToken(String cancellationToken) {
-        log.info("Getting appointment by token");
-
-        Appointment appointment = appointmentRepository.findByCancellationToken(cancellationToken)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
-
+    public AppointmentResponse getAppointmentByToken(String token) {
+        Appointment appointment = appointmentRepository.findByCancellationToken(token)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
         return toAppointmentResponse(appointment);
     }
 

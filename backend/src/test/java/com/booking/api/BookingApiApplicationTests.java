@@ -26,7 +26,7 @@ class BookingApiApplicationTests {
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public JavaMailSender javaMailSender() {
+        JavaMailSender javaMailSender() {
             return Mockito.mock(JavaMailSender.class);
         }
     }

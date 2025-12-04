@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -19,19 +19,42 @@ export class CookieConsentComponent implements OnInit {
     marketing: false
   };
 
+  private isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
+
   ngOnInit() {
     this.checkConsent();
   }
 
+  // --------------------------
+  // Safe localStorage access
+  // --------------------------
+  private safeGetItem(key: string): string | null {
+    if (!this.isBrowser || !window.localStorage) return null;
+    return localStorage.getItem(key);
+  }
+
+  private safeSetItem(key: string, value: string): void {
+    if (!this.isBrowser || !window.localStorage) return;
+    localStorage.setItem(key, value);
+  }
+
+  private safeRemoveItem(key: string): void {
+    if (!this.isBrowser || !window.localStorage) return;
+    localStorage.removeItem(key);
+  }
+
   checkConsent() {
-    const consent = localStorage.getItem('cookie-consent');
+    const consent = this.safeGetItem('cookie-consent');
     if (!consent) {
-      // Show banner if no consent recorded
       this.showBanner = true;
     } else {
-      // Load saved preferences
       const saved = JSON.parse(consent);
       this.preferences = { ...this.preferences, ...saved };
+      this.showBanner = false;
     }
   }
 
@@ -58,31 +81,16 @@ export class CookieConsentComponent implements OnInit {
   }
 
   private savePreferences() {
-    localStorage.setItem('cookie-consent', JSON.stringify(this.preferences));
-    localStorage.setItem('cookie-consent-date', new Date().toISOString());
+    this.safeSetItem('cookie-consent', JSON.stringify(this.preferences));
+    this.safeSetItem('cookie-consent-date', new Date().toISOString());
     this.showBanner = false;
     this.showDetails = false;
-
-    // Apply preferences (enable/disable analytics, marketing cookies)
     this.applyPreferences();
   }
 
   private applyPreferences() {
-    // Here you would enable/disable analytics tools like Google Analytics
-    if (this.preferences.analytics) {
-      console.log('Analytics cookies enabled');
-      // Example: Initialize Google Analytics
-    } else {
-      console.log('Analytics cookies disabled');
-      // Example: Disable Google Analytics
-    }
-
-    if (this.preferences.marketing) {
-      console.log('Marketing cookies enabled');
-      // Example: Initialize Facebook Pixel, etc.
-    } else {
-      console.log('Marketing cookies disabled');
-    }
+    console.log(`Analytics cookies ${this.preferences.analytics ? 'enabled' : 'disabled'}`);
+    console.log(`Marketing cookies ${this.preferences.marketing ? 'enabled' : 'disabled'}`);
   }
 
   toggleDetails() {
@@ -90,6 +98,8 @@ export class CookieConsentComponent implements OnInit {
   }
 
   openPrivacyPolicy() {
-    window.open('/privacy-policy', '_blank');
+    if (this.isBrowser) {
+      window.open('/privacy-policy', '_blank');
+    }
   }
 }

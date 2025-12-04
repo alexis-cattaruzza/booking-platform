@@ -3,6 +3,8 @@ package com.booking.api.service;
 import com.booking.api.dto.request.UpdateBusinessRequest;
 import com.booking.api.dto.response.BusinessResponse;
 import com.booking.api.dto.response.ServiceResponse;
+import com.booking.api.exception.BadRequestException;
+import com.booking.api.exception.NotFoundException;
 import com.booking.api.model.Business;
 import com.booking.api.model.User;
 import com.booking.api.repository.BusinessRepository;
@@ -34,10 +36,10 @@ public class BusinessService {
         log.info("Getting business for user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         Business business = businessRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Business not found for user"));
+                .orElseThrow(() -> new NotFoundException("Business not found for user"));
 
         return mapToResponse(business);
     }
@@ -49,10 +51,10 @@ public class BusinessService {
         log.info("Getting public business with slug: {}", slug);
 
         Business business = businessRepository.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Business not found with slug: " + slug));
+                .orElseThrow(() -> new NotFoundException("Business not found with slug: " + slug));
 
         if (!business.getIsActive()) {
-            throw new RuntimeException("Business is not active");
+            throw new BadRequestException("Business is not active");
         }
 
         return mapToResponse(business);
@@ -67,10 +69,14 @@ public class BusinessService {
         log.info("Updating business for user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new NotFoundException("User not found"));
 
         Business business = businessRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Business not found"));
+            .orElseThrow(() -> new NotFoundException("Business not found"));
+        
+        if (request.getBusinessName() != null && request.getBusinessName().isBlank()) {
+            throw new BadRequestException("Business name cannot be empty");
+        }
 
         // Mise à jour des champs non-null
         if (request.getBusinessName() != null) {
@@ -114,10 +120,10 @@ public class BusinessService {
         log.info("Getting services for business with slug: {}", slug);
 
         Business business = businessRepository.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Business not found with slug: " + slug));
+                .orElseThrow(() -> new NotFoundException("Business not found with slug: " + slug));
 
         if (!business.getIsActive()) {
-            throw new RuntimeException("Business is not active");
+            throw new BadRequestException("Business is not active");
         }
 
         List<com.booking.api.model.Service> services = serviceRepository.findByBusinessIdAndIsActiveTrue(business.getId());

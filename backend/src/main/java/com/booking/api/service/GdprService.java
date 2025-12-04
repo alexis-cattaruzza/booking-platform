@@ -3,6 +3,7 @@ package com.booking.api.service;
 import com.booking.api.dto.gdpr.AccountDeletionRequest;
 import com.booking.api.dto.gdpr.AccountDeletionResponse;
 import com.booking.api.dto.gdpr.DataExportResponse;
+import com.booking.api.exception.BadRequestException;
 import com.booking.api.model.*;
 import com.booking.api.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,14 @@ public class GdprService {
 
     @Transactional(readOnly = true)
     public DataExportResponse exportUserData(String email, String userType) {
-        log.info("Exporting GDPR data for user: {}", email);
+        if (userType == null || userType.isBlank()) {
+            throw new BadRequestException("userType is required");
+        }
+
+        if (!userType.equalsIgnoreCase("business") && !userType.equalsIgnoreCase("customer")) {
+            throw new BadRequestException("Invalid userType");
+        }
+        
         if ("BUSINESS".equalsIgnoreCase(userType)) {
             return exportBusinessData(email);
         }
@@ -83,10 +91,16 @@ public class GdprService {
     @Transactional
     public AccountDeletionResponse deleteUserAccount(String email, String userType,
                                                       AccountDeletionRequest request) {
-        log.info("Processing GDPR account deletion for: {}", email);
+        if (userType == null || userType.isBlank()) {
+            throw new BadRequestException("userType is required");
+        }
+
+        if (!userType.equalsIgnoreCase("business") && !userType.equalsIgnoreCase("customer")) {
+            throw new BadRequestException("Invalid userType");
+        }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid password");

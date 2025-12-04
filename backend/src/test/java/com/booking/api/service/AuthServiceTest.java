@@ -19,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -137,7 +138,7 @@ class AuthServiceTest {
                 .thenReturn(authentication);
         when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> authService.login(loginRequest));
+        assertThrows(UsernameNotFoundException.class, () -> authService.login(loginRequest));
 
         verify(userRepository).findByEmail(testUser.getEmail());
         verify(jwtService, never()).generateToken(any());
@@ -195,7 +196,7 @@ class AuthServiceTest {
     void register_EmailAlreadyExists() {
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(true);
 
-        assertThrows(RuntimeException.class, () -> authService.register(registerRequest));
+        assertThrows(IllegalArgumentException.class, () -> authService.register(registerRequest));
 
         verify(userRepository).existsByEmail(registerRequest.getEmail());
         verify(userRepository, never()).save(any());

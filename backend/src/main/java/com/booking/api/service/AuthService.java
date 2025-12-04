@@ -12,8 +12,10 @@ import com.booking.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +46,7 @@ public class AuthService {
 
         // Vérifier si l'email existe déjà
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("Email already exists");
         }
 
         // Créer l'utilisateur
@@ -99,17 +101,16 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         log.info("User login attempt: {}", request.getEmail());
 
-        // Authentifier l'utilisateur
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (BadCredentialsException ex) {
+            throw new BadCredentialsException("Invalid email or password"); // 401
+        }
 
-        // Charger l'utilisateur
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Charger le business
         Business business = businessRepository.findByUserId(user.getId())
@@ -130,12 +131,12 @@ public class AuthService {
 
         String userEmail = jwtService.extractUsername(refreshToken);
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 
         if (!jwtService.isTokenValid(refreshToken, userDetails)) {
-            throw new RuntimeException("Invalid refresh token");
+            throw new SecurityException("Invalid refresh token");
         }
 
         String newAccessToken = jwtService.generateToken(userDetails);

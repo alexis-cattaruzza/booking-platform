@@ -27,8 +27,7 @@ public class BusinessController {
     @GetMapping("/me")
     public ResponseEntity<BusinessResponse> getMyBusiness() {
         log.info("GET /api/businesses/me");
-        BusinessResponse response = businessService.getMyBusiness();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(businessService.getMyBusiness());
     }
 
     /**
@@ -38,8 +37,7 @@ public class BusinessController {
     @PutMapping("/me")
     public ResponseEntity<BusinessResponse> updateMyBusiness(@Valid @RequestBody UpdateBusinessRequest request) {
         log.info("PUT /api/businesses/me");
-        BusinessResponse response = businessService.updateMyBusiness(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(businessService.updateMyBusiness(request));
     }
 
     /**
@@ -49,8 +47,7 @@ public class BusinessController {
     @GetMapping("/{slug}")
     public ResponseEntity<BusinessResponse> getBusinessBySlug(@PathVariable String slug) {
         log.info("GET /api/businesses/{}", slug);
-        BusinessResponse response = businessService.getBusinessBySlug(slug);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(businessService.getBusinessBySlug(slug));
     }
 
     /**
@@ -60,7 +57,6 @@ public class BusinessController {
     @GetMapping("/{slug}/services")
     public ResponseEntity<List<ServiceResponse>> getBusinessServices(@PathVariable String slug) {
         log.info("GET /api/businesses/{}/services", slug);
-        List<ServiceResponse> services = businessService.getBusinessServices(slug);
-        return ResponseEntity.ok(services);
+        return ResponseEntity.ok(businessService.getBusinessServices(slug));
     }
 }

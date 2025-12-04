@@ -16,40 +16,22 @@ public class BookingController {
 
     private final AppointmentService appointmentService;
 
-    /**
-     * Public endpoint to create a new appointment
-     */
     @PostMapping("/{businessSlug}")
     public ResponseEntity<AppointmentResponse> createAppointment(
             @PathVariable String businessSlug,
             @Valid @RequestBody AppointmentRequest request) {
-
-        AppointmentResponse response = appointmentService.createAppointment(
-                businessSlug, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(appointmentService.createAppointment(businessSlug, request));
     }
 
-    /**
-     * Public endpoint to get appointment details by cancellation token
-     */
     @GetMapping("/appointment/{cancellationToken}")
     public ResponseEntity<AppointmentResponse> getAppointment(
             @PathVariable String cancellationToken) {
-
-        AppointmentResponse response = appointmentService.getAppointmentByToken(
-                cancellationToken);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(appointmentService.getAppointmentByToken(cancellationToken));
     }
 
-    /**
-     * Public endpoint to cancel an appointment
-     */
     @PostMapping("/cancel/{cancellationToken}")
-    public ResponseEntity<Void> cancelAppointment(
-            @PathVariable String cancellationToken) {
-
+    public ResponseEntity<Void> cancelAppointment(@PathVariable String cancellationToken) {
         appointmentService.cancelAppointment(cancellationToken);
         return ResponseEntity.ok().build();
     }

@@ -37,36 +37,30 @@ public class GdprController {
      */
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportUserData(
-            @RequestParam String userType,
-            Authentication authentication) {
+            @RequestParam(required = false) String userType,
+            Authentication authentication) throws Exception {
 
-        try {
-            String email = authentication.getName();
-            log.info("GDPR data export request from: {} (type: {})", email, userType);
+        String email = authentication.getName();
+        log.info("GDPR data export request from: {} (type: {})", email, userType);
 
-            DataExportResponse exportData = gdprService.exportUserData(email, userType);
+        DataExportResponse exportData = gdprService.exportUserData(email, userType);
 
-            // Configure ObjectMapper with JavaTimeModule for LocalDateTime serialization
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
+        // Configure ObjectMapper with JavaTimeModule for LocalDateTime serialization
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
 
-            // Convert to JSON
-            byte[] jsonData = mapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsBytes(exportData);
+        // Convert to JSON
+        byte[] jsonData = mapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsBytes(exportData);
 
-            // Set headers for file download
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setContentDispositionFormData("attachment",
-                    "gdpr-data-export-" + System.currentTimeMillis() + ".json");
-            headers.setContentLength(jsonData.length);
+        // Set headers for file download
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentDispositionFormData("attachment",
+                "gdpr-data-export-" + System.currentTimeMillis() + ".json");
+        headers.setContentLength(jsonData.length);
 
-            return new ResponseEntity<>(jsonData, headers, HttpStatus.OK);
-
-        } catch (Exception e) {
-            log.error("Error exporting GDPR data", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return new ResponseEntity<>(jsonData, headers, HttpStatus.OK);
     }
 
     /**
@@ -75,29 +69,19 @@ public class GdprController {
      */
     @PostMapping("/delete")
     public ResponseEntity<AccountDeletionResponse> deleteAccount(
-            @RequestParam String userType,
+            @RequestParam(required = false) String userType,
             @Valid @RequestBody AccountDeletionRequest request,
             Authentication authentication) {
 
-        try {
-            String email = authentication.getName();
-            log.info("GDPR account deletion request from: {} (type: {})", email, userType);
+        String email = authentication.getName();
+        log.info("GDPR account deletion request from: {} (type: {})", email, userType);
 
-            if (request.getConfirmDeletion() == null || !request.getConfirmDeletion()) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            AccountDeletionResponse response = gdprService.deleteUserAccount(email, userType, request);
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid deletion request: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
-        } catch (Exception e) {
-            log.error("Error deleting account", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        if (request.getConfirmDeletion() == null || !request.getConfirmDeletion()) {
+            throw new IllegalArgumentException("Confirmation is required for account deletion");
         }
+
+        AccountDeletionResponse response = gdprService.deleteUserAccount(email, userType, request);
+        return ResponseEntity.ok(response);
     }
 
     /**

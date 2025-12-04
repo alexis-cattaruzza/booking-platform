@@ -47,5 +47,5 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   file:
     name: logs/booking-platform.log
-    max-size: 10MB
-    max-history: 30
+  logback.rollingpolicy.max-history: 30
+  logback.rollingpolicy.max-file-size: 10MB
