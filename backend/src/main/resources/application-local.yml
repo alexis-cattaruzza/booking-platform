@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: booking-api
+  profiles:
+    active: local
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/booking_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # auto-update schema for local dev
+    show-sql: true
+
+  flyway:
+    enabled: true
+
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ''
+    password: ''
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          ssl:
+            enable: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+app:
+  mail:
+    from: noreply@booking-platform.local
+    from-name: Booking Platform (Local)
+  base-url: http://localhost:4200
+
+logging:
+  level:
+    com.booking.api: DEBUG

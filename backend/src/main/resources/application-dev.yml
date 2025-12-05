@@ -1,0 +1,58 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/booking_db}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      timeout: 2000
+
+  cache:
+    type: redis
+
+  mail:
+    host: localhost
+    port: 1025
+    username: ''
+    password: ''
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+          ssl:
+            enable: false
+
+app:
+  mail:
+    from: ${MAIL_FROM:noreply@booking-platform.local}
+    from-name: ${MAIL_FROM_NAME:Booking Platform (Dev)}
+  base-url: ${APP_BASE_URL:http://localhost:4200}
+
+logging:
+  level:
+    com.booking.api: DEBUG

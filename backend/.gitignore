@@ -32,11 +32,15 @@ build/
 ### VS Code ###
 .vscode/
 
-# Application config locale
-src/main/resources/application-dev.yml
-src/main/resources/application-local.yml
+# Application config locale (commented out - we need these in git now)
+# src/main/resources/application-dev.yml
+# src/main/resources/application-local.yml
 
 # Secrets
 *.env
+!*.env.example
 *.pem
 *.key
+.env.local
+.env.dev
+.env.prod

@@ -12,6 +12,8 @@ import com.booking.api.repository.ServiceRepository;
 import com.booking.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class BusinessService {
     /**
      * Récupère un business public par son slug
      */
+    @Cacheable(value = "business", key = "#slug")
     public BusinessResponse getBusinessBySlug(String slug) {
         log.info("Getting public business with slug: {}", slug);
 
@@ -64,6 +67,7 @@ public class BusinessService {
      * Met à jour le business de l'utilisateur connecté
      */
     @Transactional
+    @CacheEvict(value = {"business", "businessServices"}, allEntries = true)
     public BusinessResponse updateMyBusiness(UpdateBusinessRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("Updating business for user: {}", email);
@@ -116,6 +120,7 @@ public class BusinessService {
     /**
      * Récupère les services actifs d'un business public
      */
+    @Cacheable(value = "businessServices", key = "#slug")
     public List<ServiceResponse> getBusinessServices(String slug) {
         log.info("Getting services for business with slug: {}", slug);
 

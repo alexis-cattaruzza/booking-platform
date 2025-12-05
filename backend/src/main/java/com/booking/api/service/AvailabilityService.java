@@ -11,6 +11,7 @@ import com.booking.api.repository.ScheduleRepository;
 import com.booking.api.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class AvailabilityService {
     private final AppointmentRepository appointmentRepository;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "availability", key = "#businessSlug + '_' + #serviceId + '_' + #date")
     public AvailabilityResponse getAvailability(String businessSlug, UUID serviceId, LocalDate date) {
         log.info("Getting availability for business: {}, service: {}, date: {}",
                 businessSlug, serviceId, date);

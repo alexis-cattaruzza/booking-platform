@@ -14,6 +14,7 @@ import com.booking.api.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,7 @@ public class AppointmentService {
      * Uses pessimistic locking to prevent double-booking
      */
     @Transactional
+    @CacheEvict(value = "availability", allEntries = true)
     public AppointmentResponse createAppointment(String businessSlug, AppointmentRequest request) {        // Get business
         Business business = businessRepository.findBySlug(businessSlug)
                 .orElseThrow(() -> new NotFoundException("Business not found"));
@@ -140,6 +142,7 @@ public class AppointmentService {
     }
 
     @Transactional
+    @CacheEvict(value = "availability", allEntries = true)
     public void cancelAppointment(String cancellationToken) {
         Appointment appointment = appointmentRepository.findByCancellationToken(cancellationToken)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));

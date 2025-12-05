@@ -1,24 +1,19 @@
-# Build stage
-FROM maven:3.9-eclipse-temurin-21-alpine AS build
-WORKDIR /app
+FROM eclipse-temurin:21-alpine AS build
+WORKDIR /workspace
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline
+COPY pom.xml mvnw ./
+COPY .mvn .mvn
+RUN mkdir -p /root/.m2
 
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
+COPY src src
+RUN ./mvnw -B -DskipTests package
 
-# Run stage
 FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
+ARG JAR_FILE=/workspace/target/*.jar
+COPY --from=build ${JAR_FILE} app.jar
 
-# Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+RUN addgroup -S app && adduser -S app -G app
+USER app
 
-# Expose port
 EXPOSE 8080
-
-# Run
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-Xmx128m","-Xms64m","-XX:MaxMetaspaceSize=64m","-XX:+UseSerialGC","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
