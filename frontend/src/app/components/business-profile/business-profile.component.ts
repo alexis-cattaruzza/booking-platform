@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BusinessService } from '../../services/business.service';
 import { Business, UpdateBusinessRequest } from '../../models/business.model';
+import { environment } from '../../../environments/environment';
 
 interface CategoryOption {
   value: string;
@@ -23,6 +24,7 @@ export class BusinessProfileComponent implements OnInit {
   saving = false;
   error = '';
   success = '';
+  copySuccess = false;
 
   categories: CategoryOption[] = [
     { value: 'HAIRDRESSER', label: 'Coiffure' },
@@ -103,6 +105,23 @@ export class BusinessProfileComponent implements OnInit {
         this.error = err.error?.message || 'Erreur lors de la mise à jour du profil';
         this.saving = false;
       }
+    });
+  }
+
+  getBookingUrl(): string {
+    if (!this.business?.slug) return '';
+    return `${environment.frontendUrl}/book/${this.business.slug}`;
+  }
+
+  copyBookingLink() {
+    const url = this.getBookingUrl();
+    if (!url) return;
+
+    navigator.clipboard.writeText(url).then(() => {
+      this.copySuccess = true;
+      setTimeout(() => this.copySuccess = false, 3000);
+    }).catch(() => {
+      this.error = 'Erreur lors de la copie du lien';
     });
   }
 }

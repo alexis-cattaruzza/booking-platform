@@ -1,8 +1,6 @@
 spring:
   application:
     name: booking-api
-  profiles:
-    active: local
 
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/booking_db}

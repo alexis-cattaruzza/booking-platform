@@ -20,6 +20,9 @@ logs/
 QUICK-DEPLOY.md
 DEPLOYMENT-FRONTEND.md
 
+# Notes
+notes.md
+
 # Build artifacts
 dist/
 build/

@@ -1,5 +1,15 @@
 <div class="min-h-screen bg-gray-50 py-8 px-4">
   <div class="max-w-4xl mx-auto">
+    <!-- Page Title Header -->
+    @if (business && step !== 'confirmation') {
+      <div class="mb-6 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          Prendre rendez-vous chez {{ business.businessName }}
+        </h1>
+        <p class="text-gray-600">Réservez votre créneau en quelques clics</p>
+      </div>
+    }
+
     @if (error) {
       <div class="mb-6 rounded-md bg-red-50 p-4">
         <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
@@ -15,15 +25,15 @@
     @if (business && step !== 'confirmation') {
       <!-- Business Header -->
       <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">{{ business.businessName }}</h1>
+        <h2 class="text-xl font-semibold text-gray-900">{{ business.businessName }}</h2>
         @if (business.description) {
           <p class="mt-2 text-gray-600">{{ business.description }}</p>
         }
         <div class="mt-4 text-sm text-gray-500">
           @if (business.address) {
-            <p>{{ business.address }}, {{ business.postalCode }} {{ business.city }}</p>
+            <p>📍 {{ business.address }}, {{ business.postalCode }} {{ business.city }}</p>
           }
-          <p>{{ business.phone }} | {{ business.email }}</p>
+          <p>📞 {{ business.phone }} | ✉️ {{ business.email }}</p>
         </div>
       </div>
 

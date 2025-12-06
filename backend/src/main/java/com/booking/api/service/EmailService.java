@@ -113,6 +113,24 @@ public class EmailService {
     }
 
     /**
+     * Send booking link email to business owner
+     */
+    @Async
+    public void sendBookingLinkEmail(String businessEmail, String businessName, String slug) {
+        try {
+            String subject = "Votre lien de réservation est prêt !";
+            String content = buildBookingLinkEmail(businessName, slug);
+
+            sendEmail(businessEmail, subject, content);
+
+            log.info("Booking link email sent to business {}", businessEmail);
+
+        } catch (Exception e) {
+            log.error("Failed to send booking link email to business {}", businessEmail, e);
+        }
+    }
+
+    /**
      * Send email with HTML content
      * @throws UnsupportedEncodingException 
      */
@@ -227,6 +245,43 @@ public class EmailService {
             "</div>" +
             "<p>Si vous souhaitez reprendre rendez-vous, cliquez sur le lien ci-dessous :</p>" +
             "<p><a href='" + bookingUrl + "' style='display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px;'>Prendre un nouveau rendez-vous</a></p>"
+        );
+    }
+
+    /**
+     * Build booking link email HTML content for business owners
+     */
+    private String buildBookingLinkEmail(String businessName, String slug) {
+        String bookingUrl = baseUrl + "/book/" + slug;
+
+        return buildEmailTemplate(
+            "Votre lien de réservation est prêt",
+            businessName,
+            "<p>Félicitations ! Votre profil business a été configuré avec succès.</p>" +
+            "<p>Vos clients peuvent maintenant prendre rendez-vous en ligne en utilisant le lien ci-dessous :</p>" +
+            "<div style='background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; margin: 25px 0; text-align: center;'>" +
+            "  <p style='margin: 0 0 15px 0; font-size: 14px; color: #1e40af;'><strong>Votre lien de réservation :</strong></p>" +
+            "  <p style='margin: 0; font-family: monospace; font-size: 16px; word-break: break-all;'>" +
+            "    <a href='" + bookingUrl + "' style='color: #2563eb; text-decoration: none;'>" + bookingUrl + "</a>" +
+            "  </p>" +
+            "</div>" +
+            "<h3 style='color: #1f2937; margin-top: 30px;'>Comment utiliser ce lien ?</h3>" +
+            "<ul style='color: #4b5563; line-height: 1.8;'>" +
+            "  <li><strong>Partagez-le sur vos réseaux sociaux</strong> (Facebook, Instagram, LinkedIn, etc.)</li>" +
+            "  <li><strong>Ajoutez-le à votre site web</strong> ou à votre signature email</li>" +
+            "  <li><strong>Envoyez-le par SMS ou email</strong> à vos clients réguliers</li>" +
+            "  <li><strong>Imprimez-le sur vos cartes de visite</strong> ou flyers</li>" +
+            "</ul>" +
+            "<div style='background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 25px 0;'>" +
+            "  <p style='margin: 0; color: #92400e;'><strong>💡 Conseil :</strong> Plus vous partagez ce lien, plus vos clients pourront facilement prendre rendez-vous avec vous !</p>" +
+            "</div>" +
+            "<h3 style='color: #1f2937; margin-top: 30px;'>Prochaines étapes</h3>" +
+            "<ol style='color: #4b5563; line-height: 1.8;'>" +
+            "  <li>Assurez-vous d'avoir ajouté vos <strong>services</strong> et leurs tarifs</li>" +
+            "  <li>Configurez vos <strong>horaires d'ouverture</strong></li>" +
+            "  <li>Testez votre lien de réservation en tant que client</li>" +
+            "</ol>" +
+            "<p style='margin-top: 30px;'>Connectez-vous à votre <a href='" + baseUrl + "/dashboard' style='color: #3b82f6;'>tableau de bord</a> pour gérer vos rendez-vous et paramètres.</p>"
         );
     }
 
