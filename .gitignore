@@ -18,6 +18,7 @@ logs/
 .env
 .env.local
 QUICK-DEPLOY.md
+DEPLOYMENT-FRONTEND.md
 
 # Build artifacts
 dist/

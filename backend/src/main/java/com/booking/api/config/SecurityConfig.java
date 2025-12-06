@@ -70,10 +70,11 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",
-                "http://localhost:3000",
-                "https://reservez.app",
-                "https://www.reservez.app"
+                "http://localhost:4200",           // Local dev
+                "http://localhost:3000",           // Alternative local
+                "https://*.vercel.app",            // Vercel deployments (dev + prod)
+                "https://reservez.app",            // Production domain
+                "https://www.reservez.app"         // Production domain with www
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
