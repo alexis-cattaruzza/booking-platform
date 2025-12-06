@@ -69,10 +69,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:4200",           // Local dev
                 "http://localhost:3000",           // Alternative local
-                "https://*.vercel.app",            // Vercel deployments (dev + prod)
+                "https://*.vercel.app",            // Vercel deployments (wildcard works with Pattern)
                 "https://reservez.app",            // Production domain
                 "https://www.reservez.app"         // Production domain with www
         ));
