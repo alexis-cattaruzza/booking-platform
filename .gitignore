@@ -17,6 +17,7 @@ logs/
 # Environment
 .env
 .env.local
+QUICK-DEPLOY.md
 
 # Build artifacts
 dist/

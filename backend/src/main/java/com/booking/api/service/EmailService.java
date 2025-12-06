@@ -151,7 +151,6 @@ public class EmailService {
      * Build confirmation email HTML content
      */
     private String buildConfirmationEmail(Appointment appointment) {
-        String businessName = appointment.getBusiness().getBusinessName();
         String serviceName = appointment.getService().getName();
         String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
         String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);

@@ -137,8 +137,6 @@ class AppointmentControllerTest {
     @Test
     void getAppointments_Success() throws Exception {
         // Given
-        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 0, 0);
-        LocalDateTime end = LocalDateTime.of(2024, 1, 31, 23, 59);
         List<AppointmentResponse> appointments = Arrays.asList(appointmentResponse1, appointmentResponse2);
 
         when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));

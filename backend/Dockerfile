@@ -1,18 +1,27 @@
-FROM eclipse-temurin:21-alpine AS build
+FROM eclipse-temurin:21-jammy AS build
 WORKDIR /workspace
 
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
+
+# Fix mvnw permissions
+RUN chmod +x mvnw
+
+# Create maven cache directory
 RUN mkdir -p /root/.m2
 
+# Copy source code
 COPY src src
-RUN ./mvnw -B -DskipTests package
 
-FROM eclipse-temurin:21-jre-alpine
+# Build with tests (ensures code quality)
+RUN ./mvnw -B clean package
+
+FROM eclipse-temurin:21-jre-jammy
 ARG JAR_FILE=/workspace/target/*.jar
 COPY --from=build ${JAR_FILE} app.jar
 
-RUN addgroup -S app && adduser -S app -G app
+# Create non-root user
+RUN groupadd -r app && useradd -r -g app app
 USER app
 
 EXPOSE 8080
