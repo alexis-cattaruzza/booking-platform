@@ -14,9 +14,9 @@ spring:
     properties:
       hibernate:
         jdbc:
-          batch_size: 10
-        order_inserts: true
-        order_updates: true
+          "[batch_size]": 10
+        "[order_inserts]": true
+        "[order_updates]": true
 
   flyway:
     enabled: true
@@ -29,6 +29,8 @@ spring:
       ssl:
         enabled: ${REDIS_SSL:false}
       timeout: 2000
+      repositories:
+        enabled: false  # Disable Redis repositories (we only use it for caching)
 
   cache:
     type: redis

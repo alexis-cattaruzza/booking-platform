@@ -25,4 +25,6 @@ RUN groupadd -r app && useradd -r -g app app
 USER app
 
 EXPOSE 8080
-ENTRYPOINT ["java","-Xmx128m","-Xms64m","-XX:MaxMetaspaceSize=64m","-XX:+UseSerialGC","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+# Increased memory for startup (256MB heap, 128MB metaspace)
+# After startup, typical usage will be 150-200MB total
+ENTRYPOINT ["java","-Xmx256m","-Xms128m","-XX:MaxMetaspaceSize=128m","-XX:+UseSerialGC","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]

@@ -30,6 +30,8 @@ spring:
       ssl:
         enabled: ${REDIS_SSL:true}
       timeout: 2000
+      repositories:
+        enabled: false  # Disable Redis repositories (we only use it for caching)
       lettuce:
         pool:
           max-active: 8
