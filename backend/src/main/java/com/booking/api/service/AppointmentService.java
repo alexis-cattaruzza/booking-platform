@@ -144,7 +144,8 @@ public class AppointmentService {
     @Transactional
     @CacheEvict(value = "availability", allEntries = true)
     public void cancelAppointment(String cancellationToken) {
-        Appointment appointment = appointmentRepository.findByCancellationToken(cancellationToken)
+        // Load appointment with all relations needed for email (business, service, customer)
+        Appointment appointment = appointmentRepository.findByCancellationTokenWithRelations(cancellationToken)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));
 
         if (appointment.getStatus() == Appointment.AppointmentStatus.CANCELLED) {
@@ -158,6 +159,15 @@ public class AppointmentService {
         // Check if appointment is in the past
         if (appointment.getAppointmentDatetime().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Cannot cancel a past appointment");
+        }
+
+        // Check if cancellation is within 3 days (72 hours) before appointment
+        LocalDateTime cancellationDeadline = appointment.getAppointmentDatetime().minusDays(3);
+        if (LocalDateTime.now().isAfter(cancellationDeadline)) {
+            throw new BadRequestException(
+                "Annulation impossible : vous devez annuler au moins 3 jours avant votre rendez-vous. " +
+                "Pour toute modification, veuillez contacter directement l'établissement."
+            );
         }
 
         appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);

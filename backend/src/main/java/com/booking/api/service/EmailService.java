@@ -175,7 +175,7 @@ public class EmailService {
         String duration = appointment.getDurationMinutes() + " minutes";
         String price = String.format("%.2f €", appointment.getPrice());
         String customerName = appointment.getCustomer().getFirstName();
-        String cancelUrl = baseUrl + "/booking/cancel/" + appointment.getCancellationToken();
+        String cancelUrl = baseUrl + "/cancel/" + appointment.getCancellationToken();
 
         return buildEmailTemplate(
             "Confirmation de votre rendez-vous",
@@ -191,8 +191,15 @@ public class EmailService {
             "<p><strong>Adresse :</strong><br>" +
             appointment.getBusiness().getAddress() + "<br>" +
             appointment.getBusiness().getPostalCode() + " " + appointment.getBusiness().getCity() + "</p>" +
-            "<p>Si vous devez annuler votre rendez-vous, cliquez sur le lien ci-dessous :</p>" +
-            "<p><a href='" + cancelUrl + "' style='color: #ef4444;'>Annuler mon rendez-vous</a></p>"
+            "<div style='background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0 0 10px 0; font-weight: bold; color: #92400e;'>⚠️ Politique d'annulation</p>" +
+            "  <p style='margin: 0; color: #92400e; font-size: 14px;'>" +
+            "    Vous pouvez annuler gratuitement votre rendez-vous <strong>jusqu'à 3 jours avant</strong> la date prévue. " +
+            "    Passé ce délai, veuillez contacter directement l'établissement pour toute modification." +
+            "  </p>" +
+            "</div>" +
+            "<p>Pour annuler votre rendez-vous, cliquez sur le lien ci-dessous :</p>" +
+            "<p><a href='" + cancelUrl + "' style='color: #ef4444; text-decoration: underline;'>Annuler mon rendez-vous</a></p>"
         );
     }
 
@@ -204,7 +211,7 @@ public class EmailService {
         String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
         String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);
         String customerName = appointment.getCustomer().getFirstName();
-        String cancelUrl = baseUrl + "/booking/cancel/" + appointment.getCancellationToken();
+        String cancelUrl = baseUrl + "/cancel/" + appointment.getCancellationToken();
 
         return buildEmailTemplate(
             "Rappel : Votre rendez-vous demain",
@@ -232,19 +239,29 @@ public class EmailService {
         String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
         String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);
         String customerName = appointment.getCustomer().getFirstName();
-        String bookingUrl = baseUrl + "/booking/" + appointment.getBusiness().getSlug();
+        String businessName = appointment.getBusiness().getBusinessName();
+        String bookingUrl = baseUrl + "/book/" + appointment.getBusiness().getSlug();
 
         return buildEmailTemplate(
-            "Annulation de votre rendez-vous",
+            "Confirmation d'annulation de votre rendez-vous",
             customerName,
-            "<p>Votre rendez-vous a été annulé :</p>" +
+            "<div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #166534;'><strong>✓ Annulation confirmée</strong></p>" +
+            "  <p style='margin: 5px 0 0 0; color: #166534; font-size: 14px;'>Votre rendez-vous a été annulé avec succès.</p>" +
+            "</div>" +
+            "<p>Voici le récapitulatif du rendez-vous annulé :</p>" +
             "<div style='background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Établissement :</strong> " + businessName + "</p>" +
             "  <p style='margin: 5px 0;'><strong>Service :</strong> " + serviceName + "</p>" +
             "  <p style='margin: 5px 0;'><strong>Date :</strong> " + dateStr + "</p>" +
             "  <p style='margin: 5px 0;'><strong>Heure :</strong> " + timeStr + "</p>" +
             "</div>" +
-            "<p>Si vous souhaitez reprendre rendez-vous, cliquez sur le lien ci-dessous :</p>" +
-            "<p><a href='" + bookingUrl + "' style='display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px;'>Prendre un nouveau rendez-vous</a></p>"
+            "<p>Nous espérons vous revoir bientôt !</p>" +
+            "<p>Si vous souhaitez reprendre rendez-vous, cliquez sur le bouton ci-dessous :</p>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + bookingUrl + "' style='display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Prendre un nouveau rendez-vous</a>" +
+            "</p>" +
+            "<p style='color: #6b7280; font-size: 14px; margin-top: 30px;'>Si vous avez des questions, n'hésitez pas à contacter directement l'établissement.</p>"
         );
     }
 

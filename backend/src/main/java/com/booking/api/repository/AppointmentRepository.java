@@ -19,6 +19,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     Optional<Appointment> findByCancellationToken(String cancellationToken);
 
+    @Query("SELECT a FROM Appointment a " +
+           "JOIN FETCH a.business b " +
+           "JOIN FETCH a.service s " +
+           "JOIN FETCH a.customer c " +
+           "WHERE a.cancellationToken = :cancellationToken")
+    Optional<Appointment> findByCancellationTokenWithRelations(@Param("cancellationToken") String cancellationToken);
+
     @Query("SELECT a FROM Appointment a WHERE a.business.id = :businessId " +
            "AND a.appointmentDatetime >= :start " +
            "AND a.appointmentDatetime <= :end")
