@@ -62,31 +62,41 @@
     }
 
     <!-- Step 1: Service Selection -->
-    @if (step === 'service' && services.length > 0) {
+    @if (step === 'service') {
       <div class="bg-white shadow rounded-lg p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Choisissez un service</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          @for (service of services; track service.id) {
-            <button
-              (click)="selectService(service)"
-              class="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <div class="flex items-start">
-                <div class="w-1 h-16 rounded mr-3" [style.background-color]="service.color"></div>
-                <div class="flex-1">
-                  <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
-                  @if (service.description) {
-                    <p class="text-sm text-gray-600 mt-1">{{ service.description }}</p>
-                  }
-                  <div class="mt-2 flex items-center justify-between text-sm">
-                    <span class="text-gray-500">{{ service.durationMinutes }} min</span>
-                    <span class="font-medium text-blue-600">{{ formatPrice(service.price) }}</span>
+
+        @if (services.length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (service of services; track service.id) {
+              <button
+                (click)="selectService(service)"
+                class="text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+              >
+                <div class="flex items-start">
+                  <div class="w-1 h-16 rounded mr-3" [style.background-color]="service.color"></div>
+                  <div class="flex-1">
+                    <h3 class="font-medium text-gray-900">{{ service.name }}</h3>
+                    @if (service.description) {
+                      <p class="text-sm text-gray-600 mt-1">{{ service.description }}</p>
+                    }
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                      <span class="text-gray-500">{{ service.durationMinutes }} min</span>
+                      <span class="font-medium text-blue-600">{{ formatPrice(service.price) }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          }
-        </div>
+              </button>
+            }
+          </div>
+        } @else if (!loading) {
+          <div class="text-center py-12">
+            <div class="text-gray-400 text-5xl mb-4">📅</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun service disponible</h3>
+            <p class="text-gray-600">Ce business n'a pas encore configuré de services.</p>
+            <p class="text-sm text-gray-500 mt-2">Veuillez contacter {{ business?.businessName }} directement.</p>
+          </div>
+        }
       </div>
     }
 
