@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/booking_db}
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -23,11 +23,11 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
       ssl:
-        enabled: ${REDIS_SSL:false}
+        enabled: ${REDIS_SSL}
       timeout: 2000
       repositories:
         enabled: false  # Disable Redis repositories (we only use it for caching)
@@ -51,9 +51,9 @@ spring:
 
 app:
   mail:
-    from: ${MAIL_FROM:noreply@booking-platform.local}
-    from-name: ${MAIL_FROM_NAME:Booking Platform (Dev)}
-  base-url: ${APP_BASE_URL:http://localhost:4200}
+    from: ${MAIL_FROM}
+    from-name: ${MAIL_FROM_NAME}
+  base-url: ${APP_BASE_URL}
 
 logging:
   level:

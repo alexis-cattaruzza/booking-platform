@@ -54,6 +54,15 @@ class AuthServiceTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
+    private EmailService emailService;
+
+    @Mock
+    private AuditService auditService;
+
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
+
+    @Mock
     private Authentication authentication;
 
     @InjectMocks
@@ -106,7 +115,7 @@ class AuthServiceTest {
         when(jwtService.generateToken(userDetails)).thenReturn(accessToken);
         when(jwtService.generateRefreshToken(userDetails)).thenReturn(refreshToken);
 
-        AuthResponse response = authService.login(loginRequest);
+        AuthResponse response = authService.login(loginRequest, null);
 
         assertNotNull(response);
         assertEquals(accessToken, response.getAccessToken());
@@ -122,25 +131,25 @@ class AuthServiceTest {
 
     @Test
     void login_InvalidCredentials() {
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(testUser));
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
-        assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest));
+        assertThrows(BadCredentialsException.class, () -> authService.login(loginRequest, null));
 
+        verify(userRepository).findByEmail(loginRequest.getEmail());
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(userRepository, never()).findByEmail(any());
         verify(jwtService, never()).generateToken(any());
     }
 
     @Test
-    void login_UserNotFoundAfterAuth() {
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
+    void login_UserNotFound() {
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> authService.login(loginRequest));
+        assertThrows(UsernameNotFoundException.class, () -> authService.login(loginRequest, null));
 
-        verify(userRepository).findByEmail(testUser.getEmail());
+        verify(userRepository).findByEmail(loginRequest.getEmail());
+        verify(authenticationManager, never()).authenticate(any());
         verify(jwtService, never()).generateToken(any());
     }
 
@@ -164,13 +173,17 @@ class AuthServiceTest {
             return user;
         });
         when(businessRepository.existsBySlug(any())).thenReturn(false);
-        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> {
+            Business business = invocation.getArgument(0);
+            business.setId(UUID.randomUUID());
+            return business;
+        });
         when(subscriptionRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(userDetailsService.loadUserByUsername(registerRequest.getEmail())).thenReturn(userDetails);
         when(jwtService.generateToken(userDetails)).thenReturn(accessToken);
         when(jwtService.generateRefreshToken(userDetails)).thenReturn(refreshToken);
 
-        AuthResponse response = authService.register(registerRequest);
+        AuthResponse response = authService.register(registerRequest, null);
 
         assertNotNull(response);
         assertEquals(accessToken, response.getAccessToken());
@@ -196,7 +209,7 @@ class AuthServiceTest {
     void register_EmailAlreadyExists() {
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> authService.register(registerRequest));
+        assertThrows(IllegalArgumentException.class, () -> authService.register(registerRequest, null));
 
         verify(userRepository).existsByEmail(registerRequest.getEmail());
         verify(userRepository, never()).save(any());
@@ -222,13 +235,17 @@ class AuthServiceTest {
         });
         when(businessRepository.existsBySlug(any()))
                 .thenReturn(true, true, false); // First two slugs exist, third doesn't
-        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> {
+            Business business = invocation.getArgument(0);
+            business.setId(UUID.randomUUID());
+            return business;
+        });
         when(subscriptionRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
         when(jwtService.generateToken(any())).thenReturn("access-token");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh-token");
 
-        AuthResponse response = authService.register(registerRequest);
+        AuthResponse response = authService.register(registerRequest, null);
 
         assertNotNull(response);
         verify(businessRepository, atLeast(3)).existsBySlug(any());
@@ -255,13 +272,17 @@ class AuthServiceTest {
             return user;
         });
         when(businessRepository.existsBySlug(any())).thenReturn(false);
-        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> {
+            Business business = invocation.getArgument(0);
+            business.setId(UUID.randomUUID());
+            return business;
+        });
         when(subscriptionRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
         when(jwtService.generateToken(any())).thenReturn("access-token");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh-token");
 
-        authService.register(registerRequest);
+        authService.register(registerRequest, null);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
@@ -285,13 +306,17 @@ class AuthServiceTest {
             return user;
         });
         when(businessRepository.existsBySlug(any())).thenReturn(false);
-        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(businessRepository.save(any(Business.class))).thenAnswer(invocation -> {
+            Business business = invocation.getArgument(0);
+            business.setId(UUID.randomUUID());
+            return business;
+        });
         when(subscriptionRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(userDetailsService.loadUserByUsername(any())).thenReturn(userDetails);
         when(jwtService.generateToken(any())).thenReturn("access-token");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh-token");
 
-        authService.register(registerRequest);
+        authService.register(registerRequest, null);
 
         ArgumentCaptor<Business> businessCaptor = ArgumentCaptor.forClass(Business.class);
         verify(businessRepository).save(businessCaptor.capture());

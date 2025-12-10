@@ -83,6 +83,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse("Bad Request", ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    // Handle ForbiddenException → 403
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex) {
+        log.error("Forbidden: {}", ex.getMessage());
+        return buildErrorResponse("Forbidden", ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
     // Handle SecurityException → 403
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ErrorResponse> handleSecurityException(SecurityException ex) {

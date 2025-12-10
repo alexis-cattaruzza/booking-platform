@@ -1,6 +1,8 @@
 package com.booking.api.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +24,9 @@ public class AppointmentRequest {
     private LocalDateTime appointmentDatetime;
 
     @NotNull(message = "Customer information is required")
+    @Valid
     private CustomerRequest customer;
 
+    @Size(max = 1000, message = "Notes must not exceed 1000 characters")
     private String notes;
 }

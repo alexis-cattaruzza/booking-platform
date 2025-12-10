@@ -1,5 +1,6 @@
 package com.booking.api.dto.response;
 
+import com.booking.api.model.Business;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,43 @@ public class BusinessResponse {
     private String logoUrl;
     private Map<String, Object> settings;
     private Boolean isActive;
+    private String status;
+    private String ownerFirstName;
+    private String ownerLastName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
+
+    public static BusinessResponse fromEntity(Business business) {
+        String status;
+        if (business.getDeletedAt() != null) {
+            status = "DELETED";
+        } else if (Boolean.FALSE.equals(business.getIsActive())) {
+            status = "SUSPENDED";
+        } else {
+            status = "ACTIVE";
+        }
+
+        return BusinessResponse.builder()
+                .id(business.getId())
+                .businessName(business.getBusinessName())
+                .slug(business.getSlug())
+                .category(business.getCategory() != null ? business.getCategory().name() : null)
+                .description(business.getDescription())
+                .address(business.getAddress())
+                .city(business.getCity())
+                .postalCode(business.getPostalCode())
+                .email(business.getEmail())
+                .phone(business.getPhone())
+                .logoUrl(business.getLogoUrl())
+                .settings(business.getSettings())
+                .isActive(business.getIsActive())
+                .status(status)
+                .ownerFirstName(business.getUser() != null ? business.getUser().getFirstName() : null)
+                .ownerLastName(business.getUser() != null ? business.getUser().getLastName() : null)
+                .createdAt(business.getCreatedAt())
+                .updatedAt(business.getUpdatedAt())
+                .deletedAt(business.getDeletedAt())
+                .build();
+    }
 }

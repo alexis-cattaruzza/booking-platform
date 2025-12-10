@@ -3,6 +3,7 @@ package com.booking.api.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,33 @@ public class JwtService {
 
     @Value("${jwt.refresh-expiration:604800000}") // 7 jours par défaut
     private long refreshExpiration;
+
+    /**
+     * Validates JWT secret on application startup
+     * Ensures minimum 256-bit (32 bytes) secret for HMAC-SHA256 security
+     */
+    @PostConstruct
+    public void validateJwtSecret() {
+        if (secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "SECURITY ERROR: JWT secret is not configured! " +
+                "Set JWT_SECRET environment variable with at least 64 hex characters (256 bits). " +
+                "Generate with: openssl rand -hex 32"
+            );
+        }
+
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException(
+                String.format(
+                    "SECURITY ERROR: JWT secret is too short (%d bytes). " +
+                    "Minimum required: 32 bytes (256 bits). " +
+                    "Current: %d bytes. Generate secure secret with: openssl rand -hex 32",
+                    secretBytes.length, secretBytes.length
+                )
+            );
+        }
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -75,6 +103,18 @@ public class JwtService {
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * SECURITY: Get token expiration time in seconds
+     * Used for token blacklisting to match Redis TTL
+     */
+    public long getExpirationTimeInSeconds(String token) {
+        Date expiration = extractExpiration(token);
+        long now = System.currentTimeMillis();
+        long expirationTime = expiration.getTime();
+        long remainingTime = (expirationTime - now) / 1000;
+        return Math.max(remainingTime, 0);
     }
 
     private Claims extractAllClaims(String token) {

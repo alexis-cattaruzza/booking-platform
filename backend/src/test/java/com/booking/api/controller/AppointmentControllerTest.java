@@ -258,7 +258,9 @@ class AppointmentControllerTest {
                 .price(new BigDecimal("50.00"))
                 .build();
 
-        when(appointmentService.updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CONFIRMED))
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+        when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CONFIRMED))
                 .thenReturn(updatedResponse);
 
         // When & Then
@@ -269,7 +271,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
         verify(appointmentService, times(1))
-                .updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CONFIRMED);
+                .updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CONFIRMED);
     }
 
     @Test
@@ -284,7 +286,9 @@ class AppointmentControllerTest {
                 .price(new BigDecimal("50.00"))
                 .build();
 
-        when(appointmentService.updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.COMPLETED))
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+        when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.COMPLETED))
                 .thenReturn(updatedResponse);
 
         // When & Then
@@ -294,7 +298,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
 
         verify(appointmentService, times(1))
-                .updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.COMPLETED);
+                .updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.COMPLETED);
     }
 
     @Test
@@ -309,7 +313,9 @@ class AppointmentControllerTest {
                 .price(new BigDecimal("50.00"))
                 .build();
 
-        when(appointmentService.updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.NO_SHOW))
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+        when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.NO_SHOW))
                 .thenReturn(updatedResponse);
 
         // When & Then
@@ -319,7 +325,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.status").value("NO_SHOW"));
 
         verify(appointmentService, times(1))
-                .updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.NO_SHOW);
+                .updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.NO_SHOW);
     }
 
     @Test
@@ -334,7 +340,9 @@ class AppointmentControllerTest {
                 .price(new BigDecimal("50.00"))
                 .build();
 
-        when(appointmentService.updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CANCELLED))
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+        when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CANCELLED))
                 .thenReturn(updatedResponse);
 
         // When & Then
@@ -344,7 +352,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
 
         verify(appointmentService, times(1))
-                .updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CANCELLED);
+                .updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CANCELLED);
     }
 
     @Test
@@ -356,7 +364,7 @@ class AppointmentControllerTest {
         mockMvc.perform(put("/api/appointments/{appointmentId}/status", appointmentId))
                 .andExpect(status().isInternalServerError());
 
-        verify(appointmentService, never()).updateAppointmentStatus(any(), any());
+        verify(appointmentService, never()).updateAppointmentStatus(any(), any(), any());
     }
 
     @Test
@@ -369,14 +377,16 @@ class AppointmentControllerTest {
                         .param("status", "INVALID_STATUS"))
                 .andExpect(status().isBadRequest());
 
-        verify(appointmentService, never()).updateAppointmentStatus(any(), any());
+        verify(appointmentService, never()).updateAppointmentStatus(any(), any(), any());
     }
 
     @Test
     void updateAppointmentStatus_AppointmentNotFound() throws Exception {
         // Given
         UUID appointmentId = UUID.randomUUID();
-        when(appointmentService.updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CONFIRMED))
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+        when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CONFIRMED))
                 .thenThrow(new RuntimeException("Appointment not found"));
 
         // When & Then
@@ -385,7 +395,7 @@ class AppointmentControllerTest {
                 .andExpect(status().isInternalServerError());
 
         verify(appointmentService, times(1))
-                .updateAppointmentStatus(appointmentId, Appointment.AppointmentStatus.CONFIRMED);
+                .updateAppointmentStatus(testBusiness.getId(), appointmentId, Appointment.AppointmentStatus.CONFIRMED);
     }
 
     @Test
@@ -395,7 +405,7 @@ class AppointmentControllerTest {
                         .param("status", "CONFIRMED"))
                 .andExpect(status().isBadRequest());
 
-        verify(appointmentService, never()).updateAppointmentStatus(any(), any());
+        verify(appointmentService, never()).updateAppointmentStatus(any(), any(), any());
     }
 
     @Test
@@ -446,6 +456,9 @@ class AppointmentControllerTest {
         UUID appointmentId = UUID.randomUUID();
         Appointment.AppointmentStatus[] statuses = Appointment.AppointmentStatus.values();
 
+        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
+        when(businessRepository.findByUserId(testUser.getId())).thenReturn(Optional.of(testBusiness));
+
         for (Appointment.AppointmentStatus status : statuses) {
             AppointmentResponse response = AppointmentResponse.builder()
                     .id(appointmentId)
@@ -455,7 +468,7 @@ class AppointmentControllerTest {
                     .price(new BigDecimal("50.00"))
                     .build();
 
-            when(appointmentService.updateAppointmentStatus(appointmentId, status))
+            when(appointmentService.updateAppointmentStatus(testBusiness.getId(), appointmentId, status))
                     .thenReturn(response);
 
             mockMvc.perform(put("/api/appointments/{appointmentId}/status", appointmentId)
@@ -465,6 +478,6 @@ class AppointmentControllerTest {
         }
 
         verify(appointmentService, times(statuses.length))
-                .updateAppointmentStatus(eq(appointmentId), any(Appointment.AppointmentStatus.class));
+                .updateAppointmentStatus(eq(testBusiness.getId()), eq(appointmentId), any(Appointment.AppointmentStatus.class));
     }
 }

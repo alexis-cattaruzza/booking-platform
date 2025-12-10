@@ -31,6 +31,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final RateLimitingFilter rateLimitingFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
@@ -38,6 +39,25 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // SECURITY: HTTP Security Headers
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "script-src 'self' 'unsafe-inline'; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "img-src 'self' data: https:; " +
+                                        "font-src 'self' data:; " +
+                                        "connect-src 'self' https://booking-platform-tau.vercel.app http://localhost:4200; " +
+                                        "frame-ancestors 'none'")
+                        )
+                        .frameOptions(frame -> frame.deny()) // Prevent clickjacking
+                        .xssProtection(xss -> xss.disable()) // XSS protection (deprecated, use CSP instead)
+                        .contentTypeOptions(contentType -> contentType.disable()) // Prevent MIME sniffing
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000) // 1 year
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publics
                         .requestMatchers(
@@ -46,9 +66,11 @@ public class SecurityConfig {
                                 "/api/availability/**",
                                 "/api/businesses/*/services",
                                 "/api/businesses/*",
-                                "/actuator/**",
+                                "/actuator/health", // Only health endpoint public
                                 "/error"
                         ).permitAll()
+                        // Actuator endpoints secured
+                        .requestMatchers("/actuator/**").authenticated()
                         // Endpoints protégés
                         .requestMatchers("/api/businesses/**").hasAuthority("ROLE_BUSINESS")
                         .requestMatchers("/api/services/**").hasAuthority("ROLE_BUSINESS")
@@ -61,7 +83,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // SECURITY: Rate limiting applied BEFORE JWT filter to prevent brute force
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthFilter, RateLimitingFilter.class);
 
         return http.build();
     }

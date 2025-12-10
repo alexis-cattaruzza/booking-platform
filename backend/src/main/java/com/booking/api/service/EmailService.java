@@ -303,6 +303,90 @@ public class EmailService {
     }
 
     /**
+     * SECURITY: Send email verification to new user
+     */
+    @Async
+    public void sendVerificationEmail(String email, String firstName, String verificationToken) {
+        try {
+            String subject = "Vérifiez votre adresse email";
+            String content = buildVerificationEmail(firstName, verificationToken);
+
+            sendEmail(email, subject, content);
+
+            log.info("Verification email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send verification email to {}: {}", email, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build verification email content
+     */
+    private String buildVerificationEmail(String firstName, String verificationToken) {
+        String verificationUrl = baseUrl + "/verify-email?token=" + verificationToken;
+
+        String content = "    <p>Merci de vous être inscrit sur notre plateforme !</p>" +
+            "    <p>Pour activer votre compte, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :</p>" +
+            "    <div style='text-align: center; margin: 30px 0;'>" +
+            "      <a href='" + verificationUrl + "' " +
+            "         style='background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; " +
+            "                border-radius: 5px; display: inline-block; font-weight: bold;'>" +
+            "        Vérifier mon email" +
+            "      </a>" +
+            "    </div>" +
+            "    <p>Ou copiez ce lien dans votre navigateur :</p>" +
+            "    <p style='background-color: #f3f4f6; padding: 10px; word-break: break-all; font-size: 12px;'>" +
+            verificationUrl +
+            "    </p>" +
+            "    <p style='color: #dc2626; font-weight: bold;'>⚠️ Ce lien est valable pendant 24 heures.</p>" +
+            "    <p style='color: #6b7280; font-size: 14px;'>Si vous n'avez pas créé de compte, ignorez cet email.</p>";
+
+        return buildEmailTemplate("Vérifiez votre adresse email", firstName, content);
+    }
+
+    /**
+     * SECURITY: Send password reset email
+     */
+    @Async
+    public void sendPasswordResetEmail(String email, String firstName, String resetToken) {
+        try {
+            String subject = "Réinitialisation de votre mot de passe";
+            String content = buildPasswordResetEmail(firstName, resetToken);
+
+            sendEmail(email, subject, content);
+
+            log.info("Password reset email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {}: {}", email, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build password reset email content
+     */
+    private String buildPasswordResetEmail(String firstName, String resetToken) {
+        String resetUrl = baseUrl + "/reset-password?token=" + resetToken;
+
+        String content = "    <p>Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte.</p>" +
+            "    <p>Pour définir un nouveau mot de passe, cliquez sur le bouton ci-dessous :</p>" +
+            "    <div style='text-align: center; margin: 30px 0;'>" +
+            "      <a href='" + resetUrl + "' " +
+            "         style='background-color: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; " +
+            "                border-radius: 5px; display: inline-block; font-weight: bold;'>" +
+            "        Réinitialiser mon mot de passe" +
+            "      </a>" +
+            "    </div>" +
+            "    <p>Ou copiez ce lien dans votre navigateur :</p>" +
+            "    <p style='background-color: #f3f4f6; padding: 10px; word-break: break-all; font-size: 12px;'>" +
+            resetUrl +
+            "    </p>" +
+            "    <p style='color: #dc2626; font-weight: bold;'>⚠️ Ce lien est valable pendant 1 heure.</p>" +
+            "    <p style='color: #6b7280; font-size: 14px;'>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email. Votre mot de passe restera inchangé.</p>";
+
+        return buildEmailTemplate("Réinitialisation de mot de passe", firstName, content);
+    }
+
+    /**
      * Build email template with consistent design
      */
     private String buildEmailTemplate(String title, String customerName, String content) {

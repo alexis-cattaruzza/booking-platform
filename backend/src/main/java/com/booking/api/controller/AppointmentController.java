@@ -43,14 +43,16 @@ public class AppointmentController {
 
     /**
      * Update appointment status (confirm, complete, mark as no-show)
+     * SECURITY: Verifies appointment belongs to authenticated business
      */
     @PutMapping("/{appointmentId}/status")
     public ResponseEntity<AppointmentResponse> updateAppointmentStatus(
             @PathVariable UUID appointmentId,
             @RequestParam Appointment.AppointmentStatus status) {
 
+        Business business = getAuthenticatedUserBusiness();
         AppointmentResponse response = appointmentService.updateAppointmentStatus(
-                appointmentId, status);
+                business.getId(), appointmentId, status);
 
         return ResponseEntity.ok(response);
     }

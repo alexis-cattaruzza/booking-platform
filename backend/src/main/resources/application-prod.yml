@@ -24,11 +24,11 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
       ssl:
-        enabled: ${REDIS_SSL:true}
+        enabled: ${REDIS_SSL}
       timeout: 2000
       repositories:
         enabled: false  # Disable Redis repositories (we only use it for caching)
@@ -45,8 +45,8 @@ spring:
       cache-null-values: false
 
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     properties:
@@ -57,14 +57,14 @@ spring:
             enable: true
             required: true
           ssl:
-            trust: ${MAIL_HOST:smtp.gmail.com}
+            trust: ${MAIL_HOST}
     test-connection: false
 
 app:
   mail:
-    from: ${MAIL_FROM:noreply@booking-platform.com}
-    from-name: ${MAIL_FROM_NAME:Booking Platform}
-  base-url: ${APP_BASE_URL:https://booking-platform.com}
+    from: ${MAIL_FROM}
+    from-name: ${MAIL_FROM_NAME}
+  base-url: ${APP_BASE_URL}
 
 logging:
   level:

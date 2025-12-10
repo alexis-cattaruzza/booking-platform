@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(!user.getEmailVerified())
+                .disabled(false) // SECURITY: Allow login for unverified users, but frontend should show warning
                 .build();
     }
 }

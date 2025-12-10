@@ -3,18 +3,19 @@ spring:
     name: booking-api
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/booking_db}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:postgres}
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update       # auto-update schema for local dev
+      ddl-auto: update
     show-sql: true
 
   flyway:
     enabled: true
+    baseline-on-migrate: true
 
   mail:
     host: ${MAIL_HOST:localhost}
@@ -31,9 +32,9 @@ spring:
             enable: false
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
 app:
   mail:

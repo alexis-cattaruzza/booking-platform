@@ -36,18 +36,29 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
+    private final EmailService emailService;
+    private final AuditService auditService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 
+    // SECURITY: Account lockout configuration
+    private static final int MAX_FAILED_ATTEMPTS = 5;
+    private static final int LOCKOUT_DURATION_MINUTES = 15;
+
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
         log.info("Registering new user with email: {}", request.getEmail());
 
         // Vérifier si l'email existe déjà
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
+
+        // SECURITY: Generate email verification token
+        String verificationToken = java.util.UUID.randomUUID().toString();
+        java.time.LocalDateTime tokenExpiration = java.time.LocalDateTime.now().plusHours(24);
 
         // Créer l'utilisateur
         User user = User.builder()
@@ -57,11 +68,17 @@ public class AuthService {
                 .lastName(request.getLastName())
                 .phone(request.getPhone())
                 .role(User.UserRole.BUSINESS)
-                .emailVerified(true) // Temporaire pour MVP - TODO: implémenter vérification email
+                .emailVerified(false) // SECURITY: Require email verification
+                .emailVerificationToken(verificationToken)
+                .emailVerificationTokenExpiresAt(tokenExpiration)
                 .build();
 
         user = userRepository.save(user);
         log.info("User created with ID: {}", user.getId());
+
+        // SECURITY: Send verification email
+        emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), verificationToken);
+        log.info("Verification email sent to: {}", user.getEmail());
 
         // Générer un slug unique pour le business
         String baseSlug = generateSlug(request.getBusinessName());
@@ -95,22 +112,70 @@ public class AuthService {
         String accessToken = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
+        // SECURITY: Log registration audit
+        auditService.logAudit(
+            user,
+            com.booking.api.model.AuditLog.Actions.REGISTER,
+            com.booking.api.model.AuditLog.AuditStatus.SUCCESS,
+            httpRequest,
+            "Business",
+            business.getId().toString(),
+            null,
+            auditService.createDetails("businessName", business.getBusinessName())
+        );
+
         return buildAuthResponse(user, business, accessToken, refreshToken);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    @Transactional
+    public AuthResponse login(LoginRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
         log.info("User login attempt: {}", request.getEmail());
+
+        // SECURITY: Load user first to check account lockout
+        User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // SECURITY: Check if account is locked
+        if (user.getAccountLockedUntil() != null &&
+            user.getAccountLockedUntil().isAfter(java.time.LocalDateTime.now())) {
+            long minutesRemaining = java.time.Duration.between(
+                java.time.LocalDateTime.now(),
+                user.getAccountLockedUntil()
+            ).toMinutes();
+            throw new SecurityException(
+                String.format("Account locked due to multiple failed login attempts. Try again in %d minutes.",
+                    minutesRemaining)
+            );
+        }
 
         try {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
+
+            // SECURITY: Reset failed attempts on successful login
+            if (user.getFailedLoginAttempts() > 0) {
+                user.setFailedLoginAttempts(0);
+                user.setAccountLockedUntil(null);
+                userRepository.save(user);
+                log.info("Failed login attempts reset for user: {}", user.getEmail());
+            }
+
         } catch (BadCredentialsException ex) {
+            // SECURITY: Increment failed attempts
+            handleFailedLoginAttempt(user);
+
+            // SECURITY: Log failed login attempt
+            auditService.logAudit(
+                user,
+                com.booking.api.model.AuditLog.Actions.LOGIN_FAILED,
+                com.booking.api.model.AuditLog.AuditStatus.FAILURE,
+                httpRequest,
+                "Authentication failed - invalid credentials"
+            );
+
             throw new BadCredentialsException("Invalid email or password"); // 401
         }
-
-        User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // Charger le business
         Business business = businessRepository.findByUserId(user.getId())
@@ -123,7 +188,87 @@ public class AuthService {
 
         log.info("User logged in successfully: {}", user.getEmail());
 
+        // SECURITY: Log successful login
+        auditService.logAudit(
+            user,
+            com.booking.api.model.AuditLog.Actions.LOGIN,
+            com.booking.api.model.AuditLog.AuditStatus.SUCCESS,
+            httpRequest
+        );
+
         return buildAuthResponse(user, business, accessToken, refreshToken);
+    }
+
+    /**
+     * SECURITY: Handle failed login attempt and implement account lockout
+     */
+    private void handleFailedLoginAttempt(User user) {
+        int attempts = user.getFailedLoginAttempts() + 1;
+        user.setFailedLoginAttempts(attempts);
+
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            user.setAccountLockedUntil(java.time.LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
+            log.warn("Account locked for user {} after {} failed attempts", user.getEmail(), attempts);
+        } else {
+            log.warn("Failed login attempt {} of {} for user {}", attempts, MAX_FAILED_ATTEMPTS, user.getEmail());
+        }
+
+        userRepository.save(user);
+    }
+
+    /**
+     * SECURITY: Verify user email with token
+     */
+    @Transactional
+    public void verifyEmail(String token) {
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new com.booking.api.exception.NotFoundException("Invalid verification token"));
+
+        // Check if token has expired
+        if (user.getEmailVerificationTokenExpiresAt() == null ||
+            user.getEmailVerificationTokenExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new com.booking.api.exception.BadRequestException(
+                "Verification token has expired. Please request a new verification email.");
+        }
+
+        // Check if already verified
+        if (user.getEmailVerified()) {
+            throw new com.booking.api.exception.BadRequestException("Email already verified");
+        }
+
+        // Verify email
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiresAt(null);
+        userRepository.save(user);
+
+        log.info("Email verified successfully for user: {}", user.getEmail());
+    }
+
+    /**
+     * SECURITY: Resend verification email
+     */
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new com.booking.api.exception.NotFoundException("User not found"));
+
+        // Check if already verified
+        if (user.getEmailVerified()) {
+            throw new com.booking.api.exception.BadRequestException("Email already verified");
+        }
+
+        // Generate new token
+        String verificationToken = java.util.UUID.randomUUID().toString();
+        java.time.LocalDateTime tokenExpiration = java.time.LocalDateTime.now().plusHours(24);
+
+        user.setEmailVerificationToken(verificationToken);
+        user.setEmailVerificationTokenExpiresAt(tokenExpiration);
+        userRepository.save(user);
+
+        // Send email
+        emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), verificationToken);
+        log.info("Verification email resent to: {}", user.getEmail());
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -198,5 +343,103 @@ public class AuthService {
         }
 
         return slug;
+    }
+
+    /**
+     * SECURITY: Request password reset
+     */
+    @Transactional
+    public void forgotPassword(String email, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new com.booking.api.exception.NotFoundException("User not found"));
+
+        // SECURITY: Generate password reset token (1 hour validity)
+        String resetToken = java.util.UUID.randomUUID().toString();
+        java.time.LocalDateTime tokenExpiration = java.time.LocalDateTime.now().plusHours(1);
+
+        user.setPasswordResetToken(resetToken);
+        user.setPasswordResetTokenExpiresAt(tokenExpiration);
+        userRepository.save(user);
+
+        // Send password reset email
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetToken);
+        log.info("Password reset email sent to: {}", user.getEmail());
+
+        // SECURITY: Log password reset request
+        auditService.logAudit(
+            user,
+            com.booking.api.model.AuditLog.Actions.PASSWORD_RESET_REQUESTED,
+            com.booking.api.model.AuditLog.AuditStatus.SUCCESS,
+            httpRequest
+        );
+    }
+
+    /**
+     * SECURITY: Reset password with token
+     */
+    @Transactional
+    public void resetPassword(String token, String newPassword, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        User user = userRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> new com.booking.api.exception.NotFoundException("Invalid reset token"));
+
+        // SECURITY: Check if token has expired
+        if (user.getPasswordResetTokenExpiresAt() == null ||
+            user.getPasswordResetTokenExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new com.booking.api.exception.BadRequestException(
+                "Reset token has expired. Please request a new password reset.");
+        }
+
+        // SECURITY: Update password and invalidate token
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiresAt(null);
+
+        // SECURITY: Reset failed login attempts on password reset
+        user.setFailedLoginAttempts(0);
+        user.setAccountLockedUntil(null);
+
+        userRepository.save(user);
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
+
+        // SECURITY: Log password reset completion
+        auditService.logAudit(
+            user,
+            com.booking.api.model.AuditLog.Actions.PASSWORD_RESET_COMPLETED,
+            com.booking.api.model.AuditLog.AuditStatus.SUCCESS,
+            httpRequest
+        );
+    }
+
+    /**
+     * SECURITY: Logout user and blacklist JWT token
+     * @param authHeader Authorization header containing Bearer token
+     * @param httpRequest HTTP request for audit logging
+     */
+    @Transactional
+    public void logout(String authHeader, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+        String userEmail = jwtService.extractUsername(token);
+
+        // Get user for audit logging
+        User user = userRepository.findByEmail(userEmail).orElse(null);
+
+        // SECURITY: Calculate token expiration and blacklist it
+        long expirationSeconds = jwtService.getExpirationTimeInSeconds(token);
+        tokenBlacklistService.blacklistToken(token, expirationSeconds);
+
+        log.info("SECURITY: User logged out: {}", userEmail);
+
+        // SECURITY: Log logout action
+        auditService.logAudit(
+            user,
+            com.booking.api.model.AuditLog.Actions.LOGOUT,
+            com.booking.api.model.AuditLog.AuditStatus.SUCCESS,
+            httpRequest
+        );
     }
 }

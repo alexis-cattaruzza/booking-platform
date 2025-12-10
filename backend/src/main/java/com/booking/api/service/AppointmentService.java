@@ -86,8 +86,9 @@ public class AppointmentService {
         // Find or create customer
         Customer customer = customerService.findOrCreateCustomer(business, request.getCustomer());
 
-        // Generate cancellation token
+        // SECURITY: Generate cancellation token with expiration (24h before appointment)
         String cancellationToken = UUID.randomUUID().toString();
+        LocalDateTime cancellationTokenExpiry = appointmentStart.minusHours(24);
 
         // Create appointment
         Appointment appointment = Appointment.builder()
@@ -100,6 +101,7 @@ public class AppointmentService {
                 .status(Appointment.AppointmentStatus.PENDING)
                 .notes(request.getNotes())
                 .cancellationToken(cancellationToken)
+                .cancellationTokenExpiresAt(cancellationTokenExpiry)
                 .build();
 
         appointment = appointmentRepository.save(appointment);
@@ -130,10 +132,17 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponse updateAppointmentStatus(
+            UUID businessId,
             UUID appointmentId,
             Appointment.AppointmentStatus newStatus) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        // SECURITY: Verify appointment belongs to the authenticated business
+        if (!appointment.getBusiness().getId().equals(businessId)) {
+            throw new com.booking.api.exception.ForbiddenException(
+                "You are not authorized to modify this appointment");
+        }
 
         appointment.setStatus(newStatus);
         appointment = appointmentRepository.save(appointment);
@@ -147,6 +156,14 @@ public class AppointmentService {
         // Load appointment with all relations needed for email (business, service, customer)
         Appointment appointment = appointmentRepository.findByCancellationTokenWithRelations(cancellationToken)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        // SECURITY: Check if cancellation token has expired
+        if (appointment.getCancellationTokenExpiresAt() != null &&
+            LocalDateTime.now().isAfter(appointment.getCancellationTokenExpiresAt())) {
+            throw new BadRequestException(
+                "Le lien d'annulation a expiré (24h avant le rendez-vous). " +
+                "Pour annuler, veuillez contacter directement l'établissement.");
+        }
 
         if (appointment.getStatus() == Appointment.AppointmentStatus.CANCELLED) {
             throw new ConflictException("Appointment is already cancelled");

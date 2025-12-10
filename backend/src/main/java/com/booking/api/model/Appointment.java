@@ -69,6 +69,9 @@ public class Appointment {
     @Column(name = "cancellation_token", unique = true, length = 64)
     private String cancellationToken;
 
+    @Column(name = "cancellation_token_expires_at")
+    private LocalDateTime cancellationTokenExpiresAt;
+
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 

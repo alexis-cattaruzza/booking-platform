@@ -19,6 +19,7 @@ logs/
 .env.local
 QUICK-DEPLOY.md
 DEPLOYMENT-FRONTEND.md
+/docs/notes.txt
 
 # Notes
 notes.md

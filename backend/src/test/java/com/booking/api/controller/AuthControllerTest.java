@@ -85,7 +85,7 @@ class AuthControllerTest {
     @Test
     void register_Success() throws Exception {
         // Given
-        when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
+        when(authService.register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class))).thenReturn(authResponse);
 
         // When & Then
         mockMvc.perform(post("/api/auth/register")
@@ -99,7 +99,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.user.lastName").value("Doe"))
                 .andExpect(jsonPath("$.user.role").value("BUSINESS"));
 
-        verify(authService, times(1)).register(any(RegisterRequest.class));
+        verify(authService, times(1)).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -113,7 +113,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).register(any(RegisterRequest.class));
+        verify(authService, never()).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -127,7 +127,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).register(any(RegisterRequest.class));
+        verify(authService, never()).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -141,13 +141,13 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).register(any(RegisterRequest.class));
+        verify(authService, never()).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
     void register_ServiceException() throws Exception {
         // Given
-        when(authService.register(any(RegisterRequest.class)))
+        when(authService.register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class)))
                 .thenThrow(new IllegalArgumentException("Email already in use"));
 
         // When & Then
@@ -156,13 +156,13 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, times(1)).register(any(RegisterRequest.class));
+        verify(authService, times(1)).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
     void login_Success() throws Exception {
         // Given
-        when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
+        when(authService.login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class))).thenReturn(authResponse);
 
         // When & Then
         mockMvc.perform(post("/api/auth/login")
@@ -173,7 +173,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.refreshToken").value("refresh-token-jwt"))
                 .andExpect(jsonPath("$.user.email").value("test@example.com"));
 
-        verify(authService, times(1)).login(any(LoginRequest.class));
+        verify(authService, times(1)).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -187,7 +187,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).login(any(LoginRequest.class));
+        verify(authService, never()).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -201,13 +201,13 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).login(any(LoginRequest.class));
+        verify(authService, never()).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
     void login_InvalidCredentials() throws Exception {
         // Given
-        when(authService.login(any(LoginRequest.class)))
+        when(authService.login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class)))
                 .thenThrow(new RuntimeException("Invalid credentials"));
 
         // When & Then
@@ -216,7 +216,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isInternalServerError());
 
-        verify(authService, times(1)).login(any(LoginRequest.class));
+        verify(authService, times(1)).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -298,7 +298,7 @@ class AuthControllerTest {
                 .businessName("Complete Salon")
                 .build();
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
+        when(authService.register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class))).thenReturn(authResponse);
 
         // When & Then
         mockMvc.perform(post("/api/auth/register")
@@ -309,7 +309,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.refreshToken").exists())
                 .andExpect(jsonPath("$.user").exists());
 
-        verify(authService, times(1)).register(any(RegisterRequest.class));
+        verify(authService, times(1)).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -320,7 +320,7 @@ class AuthControllerTest {
                 .password("Password123!")
                 .build();
 
-        when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
+        when(authService.login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class))).thenReturn(authResponse);
 
         // When & Then
         mockMvc.perform(post("/api/auth/login")
@@ -328,7 +328,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(uppercaseEmail)))
                 .andExpect(status().isOk());
 
-        verify(authService, times(1)).login(any(LoginRequest.class));
+        verify(authService, times(1)).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -350,7 +350,7 @@ class AuthControllerTest {
                         .content("not json"))
                 .andExpect(status().isUnsupportedMediaType());
 
-        verify(authService, never()).register(any());
+        verify(authService, never()).register(any(RegisterRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test
@@ -361,6 +361,6 @@ class AuthControllerTest {
                         .content("{}"))
                 .andExpect(status().isBadRequest());
 
-        verify(authService, never()).login(any());
+        verify(authService, never()).login(any(LoginRequest.class), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 }
