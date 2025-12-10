@@ -8,11 +8,21 @@ import { PrivacyPolicyComponent } from './components/legal/privacy-policy.compon
 import { TermsOfServiceComponent } from './components/legal/terms-of-service.component';
 import { LegalMentionsComponent } from './components/legal/legal-mentions.component';
 import { CancelAppointmentComponent } from './pages/cancel-appointment/cancel-appointment.component';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
+import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
+import { AdminLayoutComponent } from './pages/admin/admin-layout.component';
+import { AdminDashboardComponent } from './pages/admin/admin-dashboard.component';
+import { AuditLogsComponent } from './pages/admin/audit-logs.component';
+import { BusinessManagementComponent } from './pages/admin/business-management.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -23,5 +33,15 @@ export const routes: Routes = [
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'terms-of-service', component: TermsOfServiceComponent },
   { path: 'legal-mentions', component: LegalMentionsComponent },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: '', component: AdminDashboardComponent },
+      { path: 'audit-logs', component: AuditLogsComponent },
+      { path: 'businesses', component: BusinessManagementComponent }
+    ]
+  },
   { path: '**', redirectTo: '/login' }
 ];

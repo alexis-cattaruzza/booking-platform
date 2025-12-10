@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { UserInfo } from '../../models/auth.model';
@@ -16,7 +16,7 @@ type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent],
+  imports: [CommonModule, RouterModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

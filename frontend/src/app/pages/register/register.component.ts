@@ -21,6 +21,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
   error = '';
+  showPassword = false;
 
   countries: Country[] = [
     { code: 'FR', name: 'France', dialCode: '+33' },
@@ -54,6 +55,10 @@ export class RegisterComponent {
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{6,15}$/)]],
       businessName: ['', Validators.required]
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit(): void {

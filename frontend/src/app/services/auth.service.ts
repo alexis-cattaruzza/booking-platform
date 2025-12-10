@@ -83,6 +83,22 @@ export class AuthService {
     );
   }
 
+  verifyEmail(token: string): Observable<{ message: string }> {
+    return this.api.getPublic<{ message: string }>(`/auth/verify-email?token=${token}`);
+  }
+
+  resendVerificationEmail(email: string): Observable<{ message: string }> {
+    return this.api.postPublic<{ message: string }>('/auth/resend-verification', { email });
+  }
+
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.api.postPublic<{ message: string }>('/auth/forgot-password', { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.api.postPublic<{ message: string }>('/auth/reset-password', { token, newPassword });
+  }
+
   private handleAuthResponse(response: AuthResponse): void {
     if (this.isBrowser) {
       localStorage.setItem('currentUser', JSON.stringify(response.user));
