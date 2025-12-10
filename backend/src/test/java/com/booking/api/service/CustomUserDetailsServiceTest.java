@@ -137,7 +137,8 @@ class CustomUserDetailsServiceTest {
         UserDetails userDetails = userDetailsService.loadUserByUsername(TEST_EMAIL);
 
         // Then
-        assertFalse(userDetails.isEnabled(), "User with unverified email should be disabled");
+        // SECURITY: Allow login for unverified users, but frontend shows warning
+        assertTrue(userDetails.isEnabled(), "User with unverified email can still login");
     }
 
     @Test
@@ -239,7 +240,8 @@ class CustomUserDetailsServiceTest {
 
         assertEquals("user2@example.com", details2.getUsername());
         assertEquals("hash2", details2.getPassword());
-        assertFalse(details2.isEnabled());
+        // SECURITY: Unverified users can still login
+        assertTrue(details2.isEnabled());
         assertEquals("ROLE_CUSTOMER",
                 details2.getAuthorities().iterator().next().getAuthority());
     }
@@ -305,10 +307,11 @@ class CustomUserDetailsServiceTest {
         UserDetails userDetails = userDetailsService.loadUserByUsername(TEST_EMAIL);
 
         // Then
-        assertFalse(userDetails.isEnabled(),
-                "Unverified user should be disabled from authentication");
+        // SECURITY: Allow login for unverified users, frontend will show verification prompt
+        assertTrue(userDetails.isEnabled(),
+                "Unverified user can still authenticate");
 
-        // But other flags should still be true
+        // Other flags should still be true
         assertTrue(userDetails.isAccountNonExpired());
         assertTrue(userDetails.isAccountNonLocked());
         assertTrue(userDetails.isCredentialsNonExpired());

@@ -60,6 +60,12 @@ class AppointmentControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private User testUser;
     private Business testBusiness;
     private AppointmentResponse appointmentResponse1;

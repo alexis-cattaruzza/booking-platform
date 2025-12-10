@@ -47,6 +47,12 @@ class AuthControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private RegisterRequest registerRequest;
     private LoginRequest loginRequest;
     private AuthResponse authResponse;
@@ -276,14 +282,18 @@ class AuthControllerTest {
 
     @Test
     void logout_Success() throws Exception {
+        // Given
+        String authHeader = "Bearer valid-token";
+        doNothing().when(authService).logout(anyString(), any(jakarta.servlet.http.HttpServletRequest.class));
+
         // When & Then
         mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", authHeader)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Logged out successfully"));
 
-        // Note: logout ne fait aucun appel au service (gestion côté client)
-        verifyNoInteractions(authService);
+        verify(authService, times(1)).logout(eq(authHeader), any(jakarta.servlet.http.HttpServletRequest.class));
     }
 
     @Test

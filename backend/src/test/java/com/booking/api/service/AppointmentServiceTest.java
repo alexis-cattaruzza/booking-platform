@@ -93,7 +93,7 @@ class AppointmentServiceTest {
                 .business(testBusiness)
                 .service(testService)
                 .customer(testCustomer)
-                .appointmentDatetime(LocalDateTime.now().plusDays(1))
+                .appointmentDatetime(LocalDateTime.now().plusDays(7)) // At least 3 days in advance
                 .durationMinutes(30)
                 .price(BigDecimal.valueOf(30.0))
                 .status(Appointment.AppointmentStatus.PENDING)
@@ -193,7 +193,7 @@ class AppointmentServiceTest {
     void cancelAppointment_Success() {
         // Given
         String cancellationToken = "valid-token";
-        when(appointmentRepository.findByCancellationToken(cancellationToken))
+        when(appointmentRepository.findByCancellationTokenWithRelations(cancellationToken))
                 .thenReturn(Optional.of(testAppointment));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(testAppointment);
 
@@ -215,15 +215,15 @@ class AppointmentServiceTest {
     void cancelAppointment_InvalidToken() {
         // Given
         String invalidToken = "invalid-token";
-        when(appointmentRepository.findByCancellationToken(invalidToken))
+        when(appointmentRepository.findByCancellationTokenWithRelations(invalidToken))
                 .thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(com.booking.api.exception.NotFoundException.class, () ->
                 appointmentService.cancelAppointment(invalidToken)
         );
 
-        verify(appointmentRepository, times(1)).findByCancellationToken(invalidToken);
+        verify(appointmentRepository, times(1)).findByCancellationTokenWithRelations(invalidToken);
         verify(appointmentRepository, never()).save(any());
         verify(emailService, never()).sendCancellationEmail(any());
     }
@@ -233,11 +233,11 @@ class AppointmentServiceTest {
         // Given
         testAppointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
         String token = "test-token";
-        when(appointmentRepository.findByCancellationToken(token))
+        when(appointmentRepository.findByCancellationTokenWithRelations(token))
                 .thenReturn(Optional.of(testAppointment));
 
         // When & Then
-        assertThrows(RuntimeException.class, () ->
+        assertThrows(com.booking.api.exception.ConflictException.class, () ->
                 appointmentService.cancelAppointment(token)
         );
 

@@ -50,6 +50,12 @@ class ScheduleControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private ScheduleRequest scheduleRequest;
     private ScheduleResponse scheduleResponse;
     private UUID scheduleId;

@@ -54,6 +54,12 @@ class GdprControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private String testEmail;
     private Authentication authentication;
     private DataExportResponse dataExportResponse;

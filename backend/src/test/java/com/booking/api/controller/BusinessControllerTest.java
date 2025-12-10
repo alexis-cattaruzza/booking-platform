@@ -52,6 +52,12 @@ class BusinessControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private BusinessResponse businessResponse;
     private UpdateBusinessRequest updateRequest;
 

@@ -42,6 +42,12 @@ class AvailabilityControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private com.booking.api.service.TokenBlacklistService tokenBlacklistService;
+
+    @MockitoBean
+    private com.booking.api.service.AuditService auditService;
+
     private String businessSlug;
     private UUID serviceId;
     private LocalDate testDate;
