@@ -1,0 +1,167 @@
+<div class="audit-logs">
+  <div class="header">
+    <div class="title-section">
+      <h1>Audit Logs</h1>
+      <p>{{ totalElements }} événements enregistrés</p>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <h3>Filtres</h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Action</label>
+        <select [(ngModel)]="selectedAction" (change)="applyFilters()">
+          <option value="">Toutes les actions</option>
+          <option value="LOGIN">LOGIN</option>
+          <option value="LOGIN_FAILED">LOGIN_FAILED</option>
+          <option value="LOGOUT">LOGOUT</option>
+          <option value="REGISTER">REGISTER</option>
+          <option value="PASSWORD_RESET_REQUESTED">PASSWORD_RESET_REQUESTED</option>
+          <option value="PASSWORD_RESET_COMPLETED">PASSWORD_RESET_COMPLETED</option>
+          <option value="UNAUTHORIZED_ACCESS">UNAUTHORIZED_ACCESS</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Status</label>
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+          <option value="">Tous les status</option>
+          <option value="SUCCESS">SUCCESS</option>
+          <option value="FAILURE">FAILURE</option>
+          <option value="ERROR">ERROR</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Recherche (email/IP)</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Rechercher..."
+        />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-reset" (click)="resetFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-container">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Utilisateur</th>
+            <th>Action</th>
+            <th>IP Address</th>
+            <th>Date/Heure</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs" [class.failure]="log.status === 'FAILURE'">
+            <td>
+              <span class="status-badge" [class]="log.status.toLowerCase()">
+                {{ log.status }}
+              </span>
+            </td>
+            <td>
+              <div class="user-cell">
+                <strong>{{ log.username }}</strong>
+              </div>
+            </td>
+            <td>
+              <span class="action-badge">{{ formatAction(log.action) }}</span>
+            </td>
+            <td>
+              <code class="ip-address">{{ log.ipAddress }}</code>
+            </td>
+            <td>
+              <div class="date-cell">
+                <div>{{ formatDate(log.createdAt) }}</div>
+                <small>{{ formatTime(log.createdAt) }}</small>
+              </div>
+            </td>
+            <td>
+              <button class="btn-details" (click)="showDetails(log)">
+                Voir
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="logs.length === 0" class="no-data">
+        Aucun log trouvé pour ces critères
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button
+        class="btn-page"
+        [disabled]="currentPage === 0"
+        (click)="goToPage(currentPage - 1)">
+        ← Précédent
+      </button>
+      <span class="page-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }}
+      </span>
+      <button
+        class="btn-page"
+        [disabled]="currentPage >= totalPages - 1"
+        (click)="goToPage(currentPage + 1)">
+        Suivant →
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Détails -->
+  <div class="modal" *ngIf="selectedLog" (click)="closeDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Détails du Log</h2>
+        <button class="btn-close" (click)="closeDetails()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-row">
+          <span class="detail-label">ID:</span>
+          <span>{{ selectedLog.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Utilisateur:</span>
+          <span>{{ selectedLog.username }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Action:</span>
+          <span class="action-badge">{{ selectedLog.action }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status:</span>
+          <span class="status-badge" [class]="selectedLog.status.toLowerCase()">
+            {{ selectedLog.status }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">IP Address:</span>
+          <code>{{ selectedLog.ipAddress }}</code>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">User Agent:</span>
+          <code class="user-agent">{{ selectedLog.userAgent }}</code>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date/Heure:</span>
+          <span>{{ formatDateTime(selectedLog.createdAt) }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedLog.errorMessage">
+          <span class="detail-label">Erreur:</span>
+          <span class="error-message">{{ selectedLog.errorMessage }}</span>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,164 @@
+  styles: [`
+.admin-layout {
+  min-height: 100vh;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-navbar {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  height: 60px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.navbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  gap: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-bottom-color: #60a5fa;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.badge-warning {
+  background: #fbbf24;
+  color: #78350f;
+}
+
+.badge-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+  `]
+})
+export class AdminLayoutComponent implements OnInit {
+  totalAuditLogs = 0;
+  totalBusinesses = 0;
+  failedLogins = 0;
+  securityEvents = 0;
+
+  constructor(
+private adminService: AdminService,
+private authService: AuthService,
+private router: Router
+  ) {}
+
+  ngOnInit() {
+this.loadStats();
+  }
+
+  loadStats() {
+// Charger les logs totaux
+this.adminService.getAuditLogs(0, 1).subscribe(data => {
+  this.totalAuditLogs = data.totalElements;
+});
+
+// Charger les businesses
+this.adminService.getAllBusinesses(0, 1).subscribe(data => {
+  this.totalBusinesses = data.totalElements;
+});
+
+// Charger les �checs de connexion
+this.adminService.getAuditLogsByAction('LOGIN_FAILED', 0, 1).subscribe(data => {
+  this.failedLogins = data.totalElements;
+});
+

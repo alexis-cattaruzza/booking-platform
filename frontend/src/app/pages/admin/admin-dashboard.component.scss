@@ -1,0 +1,156 @@
+.dashboard-page {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: #666;
+  font-size: 1rem;
+}
+
+.recent-activity, .quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.recent-activity h2, .quick-actions h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.activity-icon.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.activity-icon.failure {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.activity-user {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.activity-action {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.activity-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #e9ecef;
+  border-color: #007bff;
+}
+
+.action-icon {
+  font-size: 2rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+  `]
+})
+export class AdminDashboardComponent implements OnInit {
+  recentLogs: any[] = [];
+
+  constructor(
+private adminService: AdminService
+  ) {}
+
+  ngOnInit() {
+this.loadRecentActivity();
+  }
+
+  loadRecentActivity() {
+this.adminService.getAuditLogs(0, 10).subscribe(data => {
+  this.recentLogs = data.content;
+});
+  }
+
+  formatDate(dateString: string): string {
+const date = new Date(dateString);
+const now = new Date();
+const diff = now.getTime() - date.getTime();
+const minutes = Math.floor(diff / 60000);

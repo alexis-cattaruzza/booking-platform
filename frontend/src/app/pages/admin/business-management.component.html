@@ -1,0 +1,268 @@
+<div class="business-management">
+  <div class="header">
+    <div class="title-section">
+      <a routerLink="/admin" class="back-link">← Dashboard</a>
+      <h1>Gestion des Businesses</h1>
+      <p>{{ totalBusinesses }} entreprises enregistrées</p>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <h3>Filtres et Recherche</h3>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Statut</label>
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+          <option value="">Tous les statuts</option>
+          <option value="ACTIVE">Actif</option>
+          <option value="SUSPENDED">Suspendu</option>
+          <option value="DELETED">Supprimé</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Recherche</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Nom, email, ville..."
+        />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-reset" (click)="resetFilters()">
+          🔄 Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-container">
+      <table class="business-table">
+        <thead>
+          <tr>
+            <th>Business</th>
+            <th>Propriétaire</th>
+            <th>Contact</th>
+            <th>Ville</th>
+            <th>Créé le</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let business of businesses" [class.suspended]="business.status === 'SUSPENDED'">
+            <td>
+              <div class="business-cell">
+                <strong>{{ business.businessName }}</strong>
+                <small>{{ business.slug }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="owner-cell">
+                <strong>{{ business.ownerFirstName }} {{ business.ownerLastName }}</strong>
+                <small>{{ business.email }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="contact-cell">
+                <div>📧 {{ business.email }}</div>
+                <div *ngIf="business.phone">📞 {{ business.phone }}</div>
+              </div>
+            </td>
+            <td>
+              <div class="location-cell">
+                <div>{{ business.city }}</div>
+                <small *ngIf="business.postalCode">{{ business.postalCode }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="date-cell">
+                <div>{{ formatDate(business.createdAt) }}</div>
+                <small>{{ formatTime(business.createdAt) }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [class]="business.status.toLowerCase()">
+                {{ business.status }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-view" (click)="viewBusiness(business)" title="Voir les détails">
+                  👁️
+                </button>
+                <button
+                  *ngIf="business.status === 'ACTIVE'"
+                  class="btn-action btn-suspend"
+                  (click)="suspendBusiness(business)"
+                  title="Suspendre">
+                  ⏸️
+                </button>
+                <button
+                  *ngIf="business.status === 'SUSPENDED'"
+                  class="btn-action btn-activate"
+                  (click)="activateBusiness(business)"
+                  title="Activer">
+                  ▶️
+                </button>
+                <button
+                  class="btn-action btn-delete"
+                  (click)="deleteBusiness(business)"
+                  title="Supprimer">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="businesses.length === 0" class="no-data">
+        Aucun business trouvé pour ces critères
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button
+        class="btn-page"
+        [disabled]="currentPage === 0"
+        (click)="goToPage(currentPage - 1)">
+        ← Précédent
+      </button>
+      <span class="page-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }}
+      </span>
+      <button
+        class="btn-page"
+        [disabled]="currentPage >= totalPages - 1"
+        (click)="goToPage(currentPage + 1)">
+        Suivant →
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Détails Business -->
+  <div class="modal" *ngIf="selectedBusiness" (click)="closeDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Détails du Business</h2>
+        <button class="btn-close" (click)="closeDetails()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h3>Informations générales</h3>
+          <div class="detail-row">
+            <span class="detail-label">ID:</span>
+            <span>{{ selectedBusiness.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Nom:</span>
+            <span>{{ selectedBusiness.businessName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Slug:</span>
+            <span class="slug-value">{{ selectedBusiness.slug }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Description:</span>
+            <span>{{ selectedBusiness.description || 'N/A' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Propriétaire</h3>
+          <div class="detail-row">
+            <span class="detail-label">Nom:</span>
+            <span>{{ selectedBusiness.ownerFirstName }} {{ selectedBusiness.ownerLastName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span>{{ selectedBusiness.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Téléphone:</span>
+            <span>{{ selectedBusiness.phone || 'N/A' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Adresse</h3>
+          <div class="detail-row">
+            <span class="detail-label">Adresse:</span>
+            <span>{{ selectedBusiness.address || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Ville:</span>
+            <span>{{ selectedBusiness.city }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Code postal:</span>
+            <span>{{ selectedBusiness.postalCode || 'N/A' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Métadonnées</h3>
+          <div class="detail-row">
+            <span class="detail-label">Statut:</span>
+            <span class="status-badge" [class]="selectedBusiness.status.toLowerCase()">
+              {{ selectedBusiness.status }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Créé le:</span>
+            <span>{{ formatDateTime(selectedBusiness.createdAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedBusiness.deletedAt">
+            <span class="detail-label">Supprimé le:</span>
+            <span class="error-text">{{ formatDateTime(selectedBusiness.deletedAt) }}</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            *ngIf="selectedBusiness.status === 'ACTIVE'"
+            class="btn-modal btn-suspend"
+            (click)="suspendBusiness(selectedBusiness)">
+            ⏸️ Suspendre
+          </button>
+          <button
+            *ngIf="selectedBusiness.status === 'SUSPENDED'"
+            class="btn-modal btn-activate"
+            (click)="activateBusiness(selectedBusiness)">
+            ▶️ Activer
+          </button>
+          <button
+            class="btn-modal btn-delete"
+            (click)="deleteBusiness(selectedBusiness)">
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmation -->
+  <div class="modal" *ngIf="confirmAction" (click)="cancelAction()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmation</h2>
+        <button class="btn-close" (click)="cancelAction()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message">{{ confirmMessage }}</p>
+        <div class="confirm-actions">
+          <button class="btn-modal btn-cancel" (click)="cancelAction()">
+            Annuler
+          </button>
+          <button class="btn-modal btn-confirm" (click)="executeAction()">
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

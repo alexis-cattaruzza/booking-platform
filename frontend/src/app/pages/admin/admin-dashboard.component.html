@@ -1,0 +1,49 @@
+<div class="dashboard-page">
+  <div class="header">
+    <h1>Tableau de bord administrateur</h1>
+    <p>Vue d'ensemble de la plateforme</p>
+  </div>
+
+  <div class="recent-activity">
+    <h2>Activité Récente</h2>
+    <div class="activity-list" *ngIf="recentLogs.length > 0">
+      <div class="activity-item" *ngFor="let log of recentLogs">
+        <div class="activity-icon" [class.success]="log.status === 'SUCCESS'" [class.failure]="log.status === 'FAILURE'">
+          {{ log.status === 'SUCCESS' ? '✓' : '✗' }}
+        </div>
+        <div class="activity-content">
+          <div class="activity-header">
+            <span class="activity-user">{{ log.username }}</span>
+            <span class="activity-action">{{ log.action }}</span>
+          </div>
+          <div class="activity-meta">
+            <span>{{ log.ipAddress }}</span>
+            <span>{{ formatDate(log.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="recentLogs.length === 0" class="no-data">
+      Aucune activité récente
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <h2>Actions Rapides</h2>
+    <div class="actions-grid">
+      <button class="action-btn" routerLink="/admin/audit-logs">
+        <span class="action-icon">📋</span>
+        <span>Tous les Logs</span>
+      </button>
+      <button class="action-btn" routerLink="/admin/businesses">
+        <span class="action-icon">🏢</span>
+        <span>Businesses</span>
+      </button>
+      <button class="action-btn" routerLink="/admin/audit-logs?status=FAILURE">
+        <span class="action-icon">⚠️</span>
+        <span>Échecs</span>
+      </button>
+    </div>
+  </div>
+</div>
+  `,
