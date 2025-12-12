@@ -59,4 +59,14 @@ public class BusinessController {
         log.info("GET /api/businesses/{}/services", slug);
         return ResponseEntity.ok(businessService.getBusinessServices(slug));
     }
+
+    /**
+     * POST /api/businesses/cancel-deletion
+     * Annule la suppression programmée du business (si dans les 30 jours)
+     */
+    @PostMapping("/cancel-deletion")
+    public ResponseEntity<BusinessResponse> cancelDeletion() {
+        log.info("POST /api/businesses/cancel-deletion");
+        return ResponseEntity.ok(businessService.cancelBusinessDeletion());
+    }
 }

@@ -48,6 +48,7 @@ public class BusinessService {
 
     /**
      * Récupère un business public par son slug
+     * Note: Ne vérifie plus isActive pour permettre l'affichage d'une page d'indisponibilité
      */
     @Cacheable(value = "business", key = "#slug")
     public BusinessResponse getBusinessBySlug(String slug) {
@@ -56,10 +57,7 @@ public class BusinessService {
         Business business = businessRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Business not found with slug: " + slug));
 
-        if (!business.getIsActive()) {
-            throw new BadRequestException("Business is not active");
-        }
-
+        // Don't check isActive - let frontend display unavailable page
         return mapToResponse(business);
     }
 
@@ -119,6 +117,7 @@ public class BusinessService {
 
     /**
      * Récupère les services actifs d'un business public
+     * Note: Ne vérifie plus isActive - retourne une liste vide pour les business inactifs
      */
     @Cacheable(value = "businessServices", key = "#slug")
     public List<ServiceResponse> getBusinessServices(String slug) {
@@ -127,15 +126,39 @@ public class BusinessService {
         Business business = businessRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Business not found with slug: " + slug));
 
-        if (!business.getIsActive()) {
-            throw new BadRequestException("Business is not active");
-        }
-
+        // Don't check isActive - just return empty list if business is inactive
         List<com.booking.api.model.Service> services = serviceRepository.findByBusinessIdAndIsActiveTrue(business.getId());
 
         return services.stream()
                 .map(this::mapServiceToResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Annule la suppression programmée d'un business (si dans les 30 jours)
+     */
+    @Transactional
+    @CacheEvict(value = {"business", "businessServices"}, allEntries = true)
+    public BusinessResponse cancelBusinessDeletion() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Cancelling business deletion for user: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Business business = businessRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NotFoundException("Business not found"));
+
+        if (business.getDeletedAt() == null) {
+            throw new BadRequestException("Business is not marked for deletion");
+        }
+
+        // Reset deletedAt to cancel deletion
+        business.setDeletedAt(null);
+        business = businessRepository.save(business);
+
+        log.info("Business deletion cancelled successfully: {}", business.getId());
+        return mapToResponse(business);
     }
 
     private ServiceResponse mapServiceToResponse(com.booking.api.model.Service service) {
@@ -170,6 +193,7 @@ public class BusinessService {
                 .isActive(business.getIsActive())
                 .createdAt(business.getCreatedAt())
                 .updatedAt(business.getUpdatedAt())
+                .deletedAt(business.getDeletedAt())
                 .build();
     }
 }

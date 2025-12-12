@@ -50,6 +50,9 @@
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
     <div class="px-4 py-6 sm:px-0">
+      <!-- Deletion Banner - shown on all tabs if business is marked for deletion -->
+      <app-deletion-banner [deletedAt]="business?.deletedAt || null"></app-deletion-banner>
+
       <!-- Overview Tab -->
       @if (activeTab === 'overview') {
         <ng-container *ngIf="user$ | async as user">
@@ -164,6 +167,11 @@
       <!-- Appointments Tab -->
       @if (activeTab === 'appointments') {
         <app-appointments-management></app-appointments-management>
+      }
+
+      <!-- Vacations Tab -->
+      @if (activeTab === 'vacations') {
+        <app-vacation-management></app-vacation-management>
       }
     </div>
   </main>

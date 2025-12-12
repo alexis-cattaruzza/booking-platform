@@ -387,6 +387,193 @@ public class EmailService {
     }
 
     /**
+     * NEW: Send cancellation email to customer (initiated by customer)
+     */
+    @Async
+    public void sendCustomerCancellationEmail(Appointment appointment) {
+        try {
+            String subject = "Annulation de votre rendez-vous";
+            String content = buildCustomerCancellationEmail(appointment);
+
+            sendEmail(appointment.getCustomer().getEmail(), subject, content);
+
+            saveNotification(appointment, Notification.NotificationType.CANCELLATION,
+                subject, content, Notification.NotificationStatus.SENT);
+
+            log.info("Customer cancellation email sent for appointment {}", appointment.getId());
+
+        } catch (Exception e) {
+            log.error("Failed to send customer cancellation email for appointment {}",
+                appointment.getId(), e);
+            saveNotification(appointment, Notification.NotificationType.CANCELLATION,
+                "Cancellation email", "", Notification.NotificationStatus.FAILED);
+        }
+    }
+
+    /**
+     * NEW: Send cancellation notification to business (customer cancelled)
+     */
+    @Async
+    public void sendBusinessCancellationNotification(Appointment appointment) {
+        try {
+            String subject = "Annulation de rendez-vous - " + appointment.getCustomer().getFirstName() + " " + appointment.getCustomer().getLastName();
+            String content = buildBusinessCancellationNotification(appointment);
+
+            sendEmail(appointment.getBusiness().getEmail(), subject, content);
+
+            log.info("Business cancellation notification sent for appointment {}", appointment.getId());
+
+        } catch (Exception e) {
+            log.error("Failed to send business cancellation notification for appointment {}",
+                appointment.getId(), e);
+        }
+    }
+
+    /**
+     * NEW: Send cancellation email to customer (initiated by business)
+     */
+    @Async
+    public void sendBusinessInitiatedCancellationEmail(Appointment appointment) {
+        try {
+            String subject = "Annulation de votre rendez-vous par l'établissement";
+            String content = buildBusinessInitiatedCancellationEmail(appointment);
+
+            sendEmail(appointment.getCustomer().getEmail(), subject, content);
+
+            saveNotification(appointment, Notification.NotificationType.CANCELLATION,
+                subject, content, Notification.NotificationStatus.SENT);
+
+            log.info("Business-initiated cancellation email sent for appointment {}", appointment.getId());
+
+        } catch (Exception e) {
+            log.error("Failed to send business-initiated cancellation email for appointment {}",
+                appointment.getId(), e);
+            saveNotification(appointment, Notification.NotificationType.CANCELLATION,
+                "Cancellation email", "", Notification.NotificationStatus.FAILED);
+        }
+    }
+
+    /**
+     * Build customer cancellation email (when customer cancels)
+     */
+    private String buildCustomerCancellationEmail(Appointment appointment) {
+        String serviceName = appointment.getService().getName();
+        String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
+        String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);
+        String customerName = appointment.getCustomer().getFirstName();
+        String businessName = appointment.getBusiness().getBusinessName();
+        String bookingUrl = baseUrl + "/book/" + appointment.getBusiness().getSlug();
+        String reason = appointment.getCancellationReason() != null ? appointment.getCancellationReason() : "Non spécifiée";
+
+        return buildEmailTemplate(
+            "Confirmation d'annulation de votre rendez-vous",
+            customerName,
+            "<div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #166534;'><strong>✓ Annulation confirmée</strong></p>" +
+            "  <p style='margin: 5px 0 0 0; color: #166534; font-size: 14px;'>Votre rendez-vous a été annulé avec succès.</p>" +
+            "</div>" +
+            "<p>Voici le récapitulatif du rendez-vous annulé :</p>" +
+            "<div style='background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Établissement :</strong> " + businessName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Service :</strong> " + serviceName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Date :</strong> " + dateStr + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Heure :</strong> " + timeStr + "</p>" +
+            "</div>" +
+            "<div style='background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0 0 5px 0; font-weight: bold; color: #92400e;'>Raison de l'annulation :</p>" +
+            "  <p style='margin: 0; color: #78350f;'>" + reason + "</p>" +
+            "</div>" +
+            "<p>L'établissement a été informé de votre annulation.</p>" +
+            "<p>Nous espérons vous revoir bientôt !</p>" +
+            "<p>Si vous souhaitez reprendre rendez-vous, cliquez sur le bouton ci-dessous :</p>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + bookingUrl + "' style='display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Prendre un nouveau rendez-vous</a>" +
+            "</p>"
+        );
+    }
+
+    /**
+     * Build business notification email (when customer cancels)
+     */
+    private String buildBusinessCancellationNotification(Appointment appointment) {
+        String serviceName = appointment.getService().getName();
+        String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
+        String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);
+        String customerName = appointment.getCustomer().getFirstName() + " " + appointment.getCustomer().getLastName();
+        String customerEmail = appointment.getCustomer().getEmail();
+        String customerPhone = appointment.getCustomer().getPhone();
+        String reason = appointment.getCancellationReason() != null ? appointment.getCancellationReason() : "Non spécifiée";
+
+        return buildEmailTemplate(
+            "Annulation de rendez-vous",
+            appointment.getBusiness().getBusinessName(),
+            "<div style='background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #991b1b;'><strong>⚠️ Rendez-vous annulé par le client</strong></p>" +
+            "</div>" +
+            "<p>Un client a annulé son rendez-vous :</p>" +
+            "<div style='background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Client :</strong> " + customerName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Email :</strong> " + customerEmail + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Téléphone :</strong> " + customerPhone + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Service :</strong> " + serviceName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Date :</strong> " + dateStr + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Heure :</strong> " + timeStr + "</p>" +
+            "</div>" +
+            "<div style='background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0 0 5px 0; font-weight: bold; color: #92400e;'>Raison de l'annulation :</p>" +
+            "  <p style='margin: 0; color: #78350f;'>" + reason + "</p>" +
+            "</div>" +
+            "<p>Ce créneau est maintenant disponible pour d'autres réservations.</p>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + baseUrl + "/dashboard' style='display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Voir mon agenda</a>" +
+            "</p>"
+        );
+    }
+
+    /**
+     * Build customer email (when business cancels)
+     */
+    private String buildBusinessInitiatedCancellationEmail(Appointment appointment) {
+        String serviceName = appointment.getService().getName();
+        String dateStr = appointment.getAppointmentDatetime().format(DATE_FORMATTER);
+        String timeStr = appointment.getAppointmentDatetime().format(TIME_FORMATTER);
+        String customerName = appointment.getCustomer().getFirstName();
+        String businessName = appointment.getBusiness().getBusinessName();
+        String businessPhone = appointment.getBusiness().getPhone();
+        String businessEmail = appointment.getBusiness().getEmail();
+        String bookingUrl = baseUrl + "/book/" + appointment.getBusiness().getSlug();
+        String reason = appointment.getCancellationReason() != null ? appointment.getCancellationReason() : "Non spécifiée";
+
+        return buildEmailTemplate(
+            "Annulation de votre rendez-vous",
+            customerName,
+            "<div style='background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #991b1b;'><strong>⚠️ Votre rendez-vous a été annulé</strong></p>" +
+            "  <p style='margin: 5px 0 0 0; color: #991b1b; font-size: 14px;'>L'établissement a dû annuler votre rendez-vous.</p>" +
+            "</div>" +
+            "<p>Voici le récapitulatif du rendez-vous annulé :</p>" +
+            "<div style='background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Établissement :</strong> " + businessName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Service :</strong> " + serviceName + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Date :</strong> " + dateStr + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Heure :</strong> " + timeStr + "</p>" +
+            "</div>" +
+            "<div style='background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0 0 5px 0; font-weight: bold; color: #92400e;'>Raison de l'annulation :</p>" +
+            "  <p style='margin: 0; color: #78350f;'>" + reason + "</p>" +
+            "</div>" +
+            "<p>Nous sommes désolés pour ce désagrément. N'hésitez pas à contacter directement l'établissement pour plus d'informations ou pour reprendre rendez-vous :</p>" +
+            "<div style='background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Téléphone :</strong> " + businessPhone + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Email :</strong> " + businessEmail + "</p>" +
+            "</div>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + bookingUrl + "' style='display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Prendre un nouveau rendez-vous</a>" +
+            "</p>"
+        );
+    }
+
+    /**
      * Build email template with consistent design
      */
     private String buildEmailTemplate(String title, String customerName, String content) {

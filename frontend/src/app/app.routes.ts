@@ -7,7 +7,7 @@ import { BookingComponent } from './pages/booking/booking.component';
 import { PrivacyPolicyComponent } from './components/legal/privacy-policy.component';
 import { TermsOfServiceComponent } from './components/legal/terms-of-service.component';
 import { LegalMentionsComponent } from './components/legal/legal-mentions.component';
-import { CancelAppointmentComponent } from './pages/cancel-appointment/cancel-appointment.component';
+import { CustomerCancelAppointmentComponent } from './pages/customer-cancel-appointment/customer-cancel-appointment.component';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
@@ -29,7 +29,7 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   { path: 'book/:slug', component: BookingComponent },
-  { path: 'cancel/:token', component: CancelAppointmentComponent },
+  { path: 'cancel/:token', component: CustomerCancelAppointmentComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'terms-of-service', component: TermsOfServiceComponent },
   { path: 'legal-mentions', component: LegalMentionsComponent },

@@ -1,0 +1,200 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-2xl mx-auto">
+    <!-- Loading state -->
+    @if (loading && !appointment) {
+      <div class="flex justify-center items-center py-12">
+        <div class="text-gray-600">Chargement...</div>
+      </div>
+    }
+
+    <!-- Error state -->
+    @if (error && !success) {
+      <div class="bg-white shadow-lg rounded-lg p-8 text-center">
+        <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">Impossible d'annuler</h1>
+        <p class="text-red-600 mb-6">{{ error }}</p>
+        <a href="/" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Retour à l'accueil
+        </a>
+      </div>
+    }
+
+    <!-- Success state -->
+    @if (success && appointment) {
+      <div class="bg-white shadow-lg rounded-lg p-8 text-center">
+        <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">Annulation confirmée</h1>
+        <p class="text-gray-600 mb-6">
+          Votre rendez-vous a été annulé avec succès. Vous allez recevoir un email de confirmation.
+        </p>
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-left">
+          <p class="text-sm text-blue-900">
+            L'établissement a été informé de votre annulation. N'hésitez pas à reprendre rendez-vous quand vous le souhaitez.
+          </p>
+        </div>
+        @if (appointment.business?.slug) {
+          <a [href]="getBookingUrl()"
+             class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Reprendre rendez-vous
+          </a>
+        }
+      </div>
+    }
+
+    <!-- Cancellation form -->
+    @if (appointment && !success && !error) {
+      <div class="bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Annulation de rendez-vous</h1>
+
+        <!-- Appointment details -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+          <h2 class="font-semibold text-gray-900 mb-4">Détails du rendez-vous</h2>
+          <div class="space-y-2 text-sm">
+            @if (appointment.business?.businessName) {
+              <p><strong>Établissement :</strong> {{ appointment.business?.businessName }}</p>
+            }
+            <p><strong>Service :</strong> {{ appointment.service.name }}</p>
+            <p><strong>Date :</strong> {{ formatDate(appointment.appointmentDatetime) }}</p>
+            <p><strong>Heure :</strong> {{ formatTime(appointment.appointmentDatetime) }}</p>
+            <p><strong>Durée :</strong> {{ appointment.service.durationMinutes }} minutes</p>
+            <p><strong>Prix :</strong> {{ formatPrice(appointment.service.price) }}</p>
+          </div>
+        </div>
+
+        <!-- Warning about cancellation policy -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-yellow-800">Politique d'annulation</h3>
+              <p class="mt-1 text-sm text-yellow-700">
+                Vous devez annuler au moins <strong>3 jours avant</strong> votre rendez-vous.
+                @if (canCancel()) {
+                  <span class="block mt-2 font-medium text-green-700">
+                    ✓ Date limite : {{ formatDate(getCancellationDeadline()!.toISOString()) }} à {{ formatTime(getCancellationDeadline()!.toISOString()) }}
+                  </span>
+                } @else {
+                  <span class="block mt-2 font-medium text-red-700">
+                    ✗ Délai d'annulation dépassé. Contactez directement l'établissement.
+                  </span>
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancellation form (only if can cancel) -->
+        @if (canCancel()) {
+          <form [formGroup]="cancelForm" (ngSubmit)="onSubmit()">
+            <!-- Cancellation Reasons (Clickable) -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-900 mb-3">
+                Raison de l'annulation <span class="text-red-500">*</span>
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                @for (reason of commonReasons; track reason) {
+                  <button
+                    type="button"
+                    (click)="selectReason(reason)"
+                    [class]="'p-3 rounded-lg border-2 text-left transition-all duration-200 ' +
+                             (selectedReason === reason
+                               ? 'border-blue-500 bg-blue-50 text-blue-900 shadow-md'
+                               : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:shadow-sm')"
+                  >
+                    <span class="font-medium text-sm">{{ reason }}</span>
+                  </button>
+                }
+              </div>
+              @if (cancelForm.get('reason')?.invalid && cancelForm.get('reason')?.touched) {
+                <p class="mt-2 text-sm text-red-600">Veuillez sélectionner une raison</p>
+              }
+            </div>
+
+            <!-- Additional Comment -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
+                Commentaire supplémentaire (optionnel)
+              </label>
+              <textarea
+                formControlName="additionalComment"
+                rows="3"
+                placeholder="Ajoutez un commentaire ou précision si nécessaire..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              ></textarea>
+              <p class="mt-1 text-xs text-gray-500">Maximum 500 caractères</p>
+            </div>
+
+            <!-- Irréversibilité Disclaimer -->
+            <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-400">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-orange-800">Action irréversible</h3>
+                  <p class="mt-1 text-sm text-orange-700">
+                    Une fois confirmée, cette annulation ne pourra pas être annulée. L'établissement sera immédiatement informé par email.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <button
+                type="button"
+                (click)="router.navigate(['/'])"
+                class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                Retour
+              </button>
+              <button
+                type="submit"
+                [disabled]="cancelForm.invalid || loading"
+                class="flex-1 px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+                {{ loading ? 'Annulation en cours...' : 'Confirmer l\'annulation' }}
+              </button>
+            </div>
+          </form>
+        } @else {
+          <div class="text-center p-4 bg-gray-100 rounded-md">
+            <p class="text-sm text-gray-700">
+              L'annulation en ligne n'est plus possible pour ce rendez-vous.
+            </p>
+            <p class="text-sm text-gray-600 mt-1">
+              Veuillez contacter directement l'établissement.
+            </p>
+          </div>
+        }
+
+        <!-- Contact info -->
+        @if (appointment.business) {
+          <div class="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+            <p>
+              <strong>Besoin d'aide ?</strong> Contactez directement l'établissement :
+            </p>
+            <p class="mt-2">
+              📞 {{ appointment.business.phone }} |
+              ✉️ {{ appointment.business.email }}
+            </p>
+            <p>
+              📍 {{ appointment.business.address }}, {{ appointment.business.postalCode }} {{ appointment.business.city }}
+            </p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

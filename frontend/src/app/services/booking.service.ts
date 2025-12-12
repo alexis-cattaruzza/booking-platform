@@ -38,7 +38,7 @@ export class BookingService {
     return this.api.getPublic<Appointment>(`/booking/appointment/${token}`);
   }
 
-  cancelAppointment(token: string): Observable<void> {
-    return this.api.postPublic<void>(`/booking/cancel/${token}`, {});
+  cancelAppointment(token: string, cancellationReason: string): Observable<void> {
+    return this.api.postPublic<void>(`/booking/cancel/${token}`, { cancellationReason });
   }
 }

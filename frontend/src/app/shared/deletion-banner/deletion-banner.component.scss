@@ -1,0 +1,101 @@
+.deletion-banner {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  border: 2px solid #fc8181;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(252, 129, 129, 0.1);
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    .banner-icon {
+      font-size: 3rem;
+      flex-shrink: 0;
+    }
+
+    .banner-text {
+      flex: 1;
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #742a2a;
+        margin: 0 0 0.5rem 0;
+      }
+
+      p {
+        margin: 0.25rem 0;
+        color: #742a2a;
+        line-height: 1.5;
+
+        &.small {
+          font-size: 0.875rem;
+          color: #9b2c2c;
+        }
+      }
+
+      .countdown {
+        color: #c53030;
+        font-size: 1.1rem;
+        padding: 0.25rem 0.5rem;
+        background: white;
+        border-radius: 4px;
+      }
+    }
+
+    .btn-cancel-deletion {
+      padding: 0.75rem 1.5rem;
+      background: #38a169;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+
+      &:hover:not(:disabled) {
+        background: #2f855a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(56, 161, 105, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .banner-error {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #fc8181;
+    border-radius: 6px;
+    color: #c53030;
+  }
+
+  .banner-success {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #9ae6b4;
+    border-radius: 6px;
+    color: #2f855a;
+  }
+}
+
+@media (max-width: 768px) {
+  .deletion-banner .banner-content {
+    flex-direction: column;
+    text-align: center;
+
+    .btn-cancel-deletion {
+      width: 100%;
+    }
+  }
+}

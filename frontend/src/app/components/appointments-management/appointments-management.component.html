@@ -308,7 +308,7 @@
                   }
                   @if (canCancel(appointment)) {
                     <button
-                      (click)="updateStatus(appointment, 'CANCELLED')"
+                      (click)="cancelAppointment(appointment)"
                       class="px-3 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded"
                     >
                       Annuler
@@ -338,3 +338,11 @@
     }
   }
 </div>
+
+<!-- Cancel Modal -->
+<app-business-cancel-modal
+  [appointment]="appointmentToCancel"
+  [isOpen]="isCancelModalOpen"
+  (closeModal)="closeCancelModal()"
+  (confirmCancel)="handleCancelConfirm($event)"
+></app-business-cancel-modal>

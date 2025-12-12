@@ -1,14 +1,19 @@
 package com.booking.api.service;
 
+import com.booking.api.exception.NotFoundException;
 import com.booking.api.model.AuditLog;
+import com.booking.api.model.Business;
 import com.booking.api.model.User;
 import com.booking.api.repository.AuditLogRepository;
+import com.booking.api.repository.BusinessRepository;
+import com.booking.api.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * SECURITY: Audit service for logging security-sensitive operations
@@ -27,6 +33,8 @@ import java.util.Map;
 public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
+    private final BusinessRepository businessRepository;
+    private final UserRepository userRepository;
 
     /**
      * SECURITY: Log an audit event asynchronously
@@ -195,5 +203,49 @@ public class AuditService {
 
     public Map<String, Object> createDetails(Map<String, Object> values) {
         return new HashMap<>(values);
+    }
+
+    /**
+     * ADMIN: Permanently delete a business and its associated user
+     * Creates audit log before deletion
+     */
+    @Transactional
+    public void hardDeleteBusiness(UUID businessId, String reason) {
+        String adminEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Admin {} is hard deleting business: {} with reason: {}", adminEmail, businessId, reason);
+
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new NotFoundException("Business not found with ID: " + businessId));
+
+        String businessName = business.getBusinessName();
+        UUID userId = business.getUser().getId();
+        String userEmail = business.getUser().getEmail();
+
+        // Create audit log before deletion
+        AuditLog auditLog = AuditLog.builder()
+                .user(null)
+                .username(adminEmail)
+                .action("HARD_DELETE_BUSINESS")
+                .resourceType("Business")
+                .resourceId(businessId.toString())
+                .status(AuditLog.AuditStatus.SUCCESS)
+                .errorMessage(String.format("Admin hard delete. Business: %s, User: %s, Reason: %s",
+                            businessName, userEmail, reason))
+                .createdAt(LocalDateTime.now())
+                .build();
+        auditLogRepository.save(auditLog);
+
+        // Delete business (cascade will delete services, appointments, schedules, etc.)
+        businessRepository.delete(business);
+        log.info("Business deleted: {} ({})", businessName, businessId);
+
+        // Delete associated user
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            userRepository.delete(user);
+            log.info("User deleted: {} ({})", userEmail, userId);
+        }
+
+        log.info("Hard delete completed by admin: {}", adminEmail);
     }
 }

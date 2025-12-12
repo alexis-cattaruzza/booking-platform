@@ -8,21 +8,25 @@ import { BusinessProfileComponent } from '../../components/business-profile/busi
 import { ServicesManagementComponent } from '../../components/services-management/services-management.component';
 import { SchedulesManagementComponent } from '../../components/schedules-management/schedules-management.component';
 import { AppointmentsManagementComponent } from '../../components/appointments-management/appointments-management.component';
+import { VacationManagementComponent } from '../admin/vacation-management.component';
+import { DeletionBannerComponent } from '../../shared/deletion-banner/deletion-banner.component';
 import { ServiceService } from '../../services/service.service';
-import { Service } from '../../models/business.model';
+import { BusinessService } from '../../services/business.service';
+import { Service, Business } from '../../models/business.model';
 
-type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments';
+type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments' | 'vacations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent],
+  imports: [CommonModule, RouterModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent, VacationManagementComponent, DeletionBannerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   user$: Observable<UserInfo | null>;
   activeTab: TabType = 'overview';
+  business: Business | null = null;
 
   stats = {
     appointmentsToday: 0,
@@ -36,19 +40,33 @@ export class DashboardComponent implements OnInit {
     { id: 'profile' as TabType, name: 'Mon Profil', icon: '🏢' },
     { id: 'services' as TabType, name: 'Services', icon: '💼' },
     { id: 'schedules' as TabType, name: 'Horaires', icon: '📅' },
-    { id: 'appointments' as TabType, name: 'Rendez-vous', icon: '📋' }
+    { id: 'appointments' as TabType, name: 'Rendez-vous', icon: '📋' },
+    { id: 'vacations' as TabType, name: 'Vacances', icon: '🏖️' }
   ];
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private serviceService: ServiceService
+    private serviceService: ServiceService,
+    private businessService: BusinessService
   ) {
     this.user$ = this.authService.currentUser;
   }
 
   ngOnInit() {
     this.loadStats();
+    this.loadBusiness();
+  }
+
+  loadBusiness() {
+    this.businessService.getMyBusiness().subscribe({
+      next: (business) => {
+        this.business = business;
+      },
+      error: (err) => {
+        console.error('Error loading business:', err);
+      }
+    });
   }
 
   loadStats() {

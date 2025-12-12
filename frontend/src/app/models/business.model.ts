@@ -14,6 +14,7 @@ export interface Business {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface UpdateBusinessRequest {

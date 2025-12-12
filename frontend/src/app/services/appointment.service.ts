@@ -17,4 +17,8 @@ export class AppointmentService {
   updateAppointmentStatus(appointmentId: string, status: AppointmentStatus): Observable<Appointment> {
     return this.api.put<Appointment>(`/appointments/${appointmentId}/status?status=${status}`, {});
   }
+
+  cancelAppointment(appointmentId: string, cancellationReason: string): Observable<void> {
+    return this.api.post<void>(`/appointments/${appointmentId}/cancel`, { cancellationReason });
+  }
 }

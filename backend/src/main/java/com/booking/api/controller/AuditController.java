@@ -199,4 +199,19 @@ public class AuditController {
 
         return ResponseEntity.ok(BusinessResponse.fromEntity(updated));
     }
+
+    /**
+     * DELETE /api/admin/businesses/{id}/hard-delete
+     * Permanently delete a business and its associated user
+     * Requires a reason for audit logging
+     */
+    @DeleteMapping("/businesses/{id}/hard-delete")
+    public ResponseEntity<Void> hardDeleteBusiness(
+            @PathVariable UUID id,
+            @RequestParam String reason
+    ) {
+        log.info("Hard deleting business: {} with reason: {}", id, reason);
+        auditService.hardDeleteBusiness(id, reason);
+        return ResponseEntity.noContent().build();
+    }
 }

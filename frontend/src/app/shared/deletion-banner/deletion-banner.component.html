@@ -1,0 +1,28 @@
+<div *ngIf="deletedAt" class="deletion-banner">
+  <div class="banner-content">
+    <div class="banner-icon">⚠️</div>
+    <div class="banner-text">
+      <h3>Votre compte est programmé pour suppression</h3>
+      <p>
+        Votre business sera définitivement supprimé dans
+        <strong class="countdown">{{ daysRemaining }} jours</strong>
+        (le {{ deletionDate | date:'dd MMMM yyyy':'':'fr' }}).
+      </p>
+      <p class="small">
+        Toutes vos données seront supprimées de manière irréversible.
+      </p>
+    </div>
+    <button
+      class="btn-cancel-deletion"
+      (click)="cancelDeletion()"
+      [disabled]="cancelling">
+      {{ cancelling ? 'Annulation...' : 'Annuler la suppression' }}
+    </button>
+  </div>
+  <div *ngIf="error" class="banner-error">
+    {{ error }}
+  </div>
+  <div *ngIf="success" class="banner-success">
+    {{ success }}
+  </div>
+</div>

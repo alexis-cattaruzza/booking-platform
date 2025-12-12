@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppointmentService } from '../../services/appointment.service';
 import { Appointment, AppointmentStatus } from '../../models/business.model';
+import { BusinessCancelModalComponent, AppointmentToCancelDetails } from '../../shared/business-cancel-modal/business-cancel-modal.component';
 
 @Component({
   selector: 'app-appointments-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BusinessCancelModalComponent],
   templateUrl: './appointments-management.component.html',
   styleUrl: './appointments-management.component.scss'
 })
@@ -17,6 +18,10 @@ export class AppointmentsManagementComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+
+  // Cancel modal
+  isCancelModalOpen = false;
+  appointmentToCancel: AppointmentToCancelDetails | null = null;
 
   // View mode
   viewMode: 'list' | 'calendar' = 'list';
@@ -293,6 +298,59 @@ export class AppointmentsManagementComponent implements OnInit {
 
   canCancel(appointment: Appointment): boolean {
     return appointment.status === 'PENDING' || appointment.status === 'CONFIRMED';
+  }
+
+  openCancelModal(appointment: Appointment) {
+    this.appointmentToCancel = {
+      id: appointment.id,
+      appointmentDatetime: appointment.appointmentDatetime,
+      customer: {
+        firstName: appointment.customer.firstName,
+        lastName: appointment.customer.lastName
+      },
+      service: {
+        name: appointment.service.name
+      }
+    };
+    this.isCancelModalOpen = true;
+  }
+
+  closeCancelModal() {
+    this.isCancelModalOpen = false;
+    this.appointmentToCancel = null;
+  }
+
+  handleCancelConfirm(reason: string) {
+    if (!this.appointmentToCancel) return;
+
+    const appointmentId = this.appointmentToCancel.id;
+
+    this.appointmentService.cancelAppointment(appointmentId, reason).subscribe({
+      next: () => {
+        this.success = 'Rendez-vous annulé avec succès. Un email a été envoyé au client.';
+
+        // Update the appointment status in the list
+        const apt = this.appointments.find(a => a.id === appointmentId);
+        if (apt) {
+          apt.status = 'CANCELLED';
+        }
+
+        this.calculateStatistics();
+        this.applyFilters();
+        this.closeCancelModal();
+        setTimeout(() => this.success = '', 5000);
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Erreur lors de l\'annulation du rendez-vous';
+        this.closeCancelModal();
+        setTimeout(() => this.error = '', 5000);
+      }
+    });
+  }
+
+  // Keep for backward compatibility, but redirect to modal
+  cancelAppointment(appointment: Appointment) {
+    this.openCancelModal(appointment);
   }
 
   // Calendar helper methods

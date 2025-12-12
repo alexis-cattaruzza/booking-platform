@@ -1,0 +1,116 @@
+<!-- Modal Backdrop -->
+@if (isOpen && appointment) {
+  <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="onClose()"></div>
+
+    <!-- Modal Content -->
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-2xl">
+
+        <!-- Header -->
+        <div class="bg-red-600 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-white" id="modal-title">
+              Annuler le rendez-vous
+            </h3>
+            <button (click)="onClose()" class="text-white hover:text-gray-200 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-6">
+          <!-- Appointment Info -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-2">Détails du rendez-vous</h4>
+            <div class="text-sm text-gray-700 space-y-1">
+              <p><strong>Client :</strong> {{ appointment.customer.firstName }} {{ appointment.customer.lastName }}</p>
+              <p><strong>Service :</strong> {{ appointment.service.name }}</p>
+              <p><strong>Date :</strong> {{ formatDate(appointment.appointmentDatetime) }}</p>
+              <p><strong>Heure :</strong> {{ formatTime(appointment.appointmentDatetime) }}</p>
+            </div>
+          </div>
+
+          <!-- Warning -->
+          <div class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-800">
+                  Le client sera automatiquement informé de l'annulation par email.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <form [formGroup]="cancelForm" (ngSubmit)="onConfirm()">
+            <!-- Cancellation Reasons -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-900 mb-3">
+                Raison de l'annulation <span class="text-red-500">*</span>
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                @for (reason of cancellationReasons; track reason) {
+                  <button
+                    type="button"
+                    (click)="selectReason(reason)"
+                    [class]="'p-3 rounded-lg border-2 text-left transition-all duration-200 ' +
+                             (selectedReason === reason
+                               ? 'border-red-500 bg-red-50 text-red-900 shadow-md'
+                               : 'border-gray-200 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50 hover:shadow-sm')"
+                  >
+                    <span class="font-medium text-sm">{{ reason }}</span>
+                  </button>
+                }
+              </div>
+              @if (cancelForm.get('reason')?.invalid && cancelForm.get('reason')?.touched) {
+                <p class="mt-2 text-sm text-red-600">Veuillez sélectionner une raison</p>
+              }
+            </div>
+
+            <!-- Additional Comment -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
+                Commentaire supplémentaire (optionnel)
+              </label>
+              <textarea
+                formControlName="additionalComment"
+                rows="3"
+                placeholder="Ajoutez un commentaire ou précision si nécessaire..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+              ></textarea>
+              <p class="mt-1 text-xs text-gray-500">Maximum 500 caractères</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-4 border-t">
+              <button
+                type="button"
+                (click)="onClose()"
+                class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Retour
+              </button>
+              <button
+                type="submit"
+                [disabled]="cancelForm.invalid"
+                class="flex-1 px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                Annuler le rendez-vous
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

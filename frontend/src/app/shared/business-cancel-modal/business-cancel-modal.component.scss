@@ -1,0 +1,14 @@
+// Styles minimalistes car nous utilisons Tailwind CSS
+// Animation douce pour l'ouverture du modal
+:host {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

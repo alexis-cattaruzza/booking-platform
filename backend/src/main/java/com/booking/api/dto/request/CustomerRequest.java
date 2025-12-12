@@ -29,8 +29,8 @@ public class CustomerRequest {
     private String email;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^(\\+33|0)[1-9](\\d{2}){4}$",
-            message = "Phone must be a valid French number (e.g., 0612345678 or +33612345678)")
+    @Pattern(regexp = "^\\+\\d{1,3}\\d{6,15}$",
+            message = "Phone must be a valid international number with country code (e.g., +33612345678, +14155552671)")
     private String phone;
 
     @Size(max = 500, message = "Notes must not exceed 500 characters")
