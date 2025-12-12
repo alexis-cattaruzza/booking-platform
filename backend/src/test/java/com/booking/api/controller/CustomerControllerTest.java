@@ -69,7 +69,7 @@ class CustomerControllerTest {
                 .firstName("Jean")
                 .lastName("Dupont")
                 .email("jean.dupont@example.com")
-                .phone("0612345678")
+                .phone("+33612345678")
                 .notes("Client régulier")
                 .build();
 
@@ -78,7 +78,7 @@ class CustomerControllerTest {
                 .firstName("Jean")
                 .lastName("Dupont")
                 .email("jean.dupont@example.com")
-                .phone("0612345678")
+                .phone("+33612345678")
                 .notes("Client régulier")
                 .createdAt(LocalDateTime.now())
                 .lastVisit(LocalDateTime.now())
@@ -95,7 +95,7 @@ class CustomerControllerTest {
                 .firstName("Marie")
                 .lastName("Martin")
                 .email("marie.martin@example.com")
-                .phone("0623456789")
+                .phone("+33623456789")
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -155,7 +155,7 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.firstName").value("Jean"))
                 .andExpect(jsonPath("$.lastName").value("Dupont"))
                 .andExpect(jsonPath("$.email").value("jean.dupont@example.com"))
-                .andExpect(jsonPath("$.phone").value("0612345678"))
+                .andExpect(jsonPath("$.phone").value("+33612345678"))
                 .andExpect(jsonPath("$.notes").value("Client régulier"));
 
         verify(customerService, times(1)).getCustomerById(customerId);
@@ -281,7 +281,7 @@ class CustomerControllerTest {
     @Test
     void searchCustomers_PhoneSearch() throws Exception {
         // Given
-        String query = "0612345678";
+        String query = "+33612345678";
         List<CustomerResponse> searchResults = Arrays.asList(customerResponse);
         when(customerService.searchCustomers(query)).thenReturn(searchResults);
 
@@ -312,7 +312,7 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.firstName").value("Jean"))
                 .andExpect(jsonPath("$.lastName").value("Dupont"))
                 .andExpect(jsonPath("$.email").value("jean.dupont@example.com"))
-                .andExpect(jsonPath("$.phone").value("0612345678"));
+                .andExpect(jsonPath("$.phone").value("+33612345678"));
 
         verify(customerService, times(1)).createCustomer(any(CustomerRequest.class));
     }
@@ -764,7 +764,7 @@ class CustomerControllerTest {
                 .firstName("Jean-François")
                 .lastName("O'Connor")
                 .email("jf.oconnor@example.com")
-                .phone("0612345678")
+                .phone("+33612345678")
                 .build();
 
         CustomerResponse specialCharsResponse = CustomerResponse.builder()
@@ -772,7 +772,7 @@ class CustomerControllerTest {
                 .firstName("Jean-François")
                 .lastName("O'Connor")
                 .email("jf.oconnor@example.com")
-                .phone("0612345678")
+                .phone("+33612345678")
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -817,7 +817,7 @@ class CustomerControllerTest {
                 .firstName("A".repeat(100))
                 .lastName("B".repeat(100))
                 .email(longEmail)
-                .phone("0612345678")
+                .phone("+33612345678")
                 .notes("N".repeat(500))
                 .build();
 
@@ -826,7 +826,7 @@ class CustomerControllerTest {
                 .firstName("A".repeat(100))
                 .lastName("B".repeat(100))
                 .email(longEmail)
-                .phone("0612345678")
+                .phone("+33612345678")
                 .notes("N".repeat(500))
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -892,14 +892,14 @@ class CustomerControllerTest {
 
     @Test
     void createCustomer_WithAllValidFrenchPhoneFormats() throws Exception {
-        // Test various valid French phone formats
+        // Test various valid international phone formats
         String[] validPhones = {
-                "0612345678",
-                "0712345678",
-                "0812345678",
-                "0912345678",
                 "+33612345678",
-                "+33712345678"
+                "+33712345678",
+                "+33812345678",
+                "+33912345678",
+                "+14155552671",  // US format
+                "+442071838750"  // UK format
         };
 
         for (String phone : validPhones) {

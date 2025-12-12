@@ -48,6 +48,9 @@ class AvailabilityServiceTest {
     @Mock
     private AppointmentRepository appointmentRepository;
 
+    @Mock
+    private BusinessHolidayRepository holidayRepository;
+
     @InjectMocks
     private AvailabilityService availabilityService;
 
@@ -96,6 +99,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
@@ -191,6 +196,8 @@ class AvailabilityServiceTest {
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), exceptionDate))
                 .thenReturn(true);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), exceptionDate))
+                .thenReturn(false);
 
         // When
         AvailabilityResponse response = availabilityService.getAvailability(TEST_SLUG, SERVICE_ID, exceptionDate);
@@ -210,6 +217,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), futureDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), futureDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), futureDate.getDayOfWeek()))
                 .thenReturn(Optional.empty());
@@ -233,6 +242,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
@@ -264,6 +275,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
@@ -304,6 +317,8 @@ class AvailabilityServiceTest {
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
         when(appointmentRepository.findByBusinessIdAndDateRange(eq(testBusiness.getId()), any(), any()))
@@ -333,6 +348,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
@@ -373,6 +390,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
@@ -416,6 +435,8 @@ class AvailabilityServiceTest {
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
         when(appointmentRepository.findByBusinessIdAndDateRange(eq(testBusiness.getId()), any(), any()))
@@ -453,6 +474,8 @@ class AvailabilityServiceTest {
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));
         when(appointmentRepository.findByBusinessIdAndDateRange(eq(testBusiness.getId()), any(), any()))
@@ -488,6 +511,8 @@ class AvailabilityServiceTest {
         when(serviceRepository.findByIdAndBusinessId(SERVICE_ID, testBusiness.getId()))
                 .thenReturn(Optional.of(testService));
         when(scheduleExceptionRepository.existsByBusinessIdAndExceptionDate(testBusiness.getId(), mondayDate))
+                .thenReturn(false);
+        when(holidayRepository.existsByBusinessIdAndDate(testBusiness.getId(), mondayDate))
                 .thenReturn(false);
         when(scheduleRepository.findByBusinessIdAndDayOfWeek(testBusiness.getId(), DayOfWeek.MONDAY))
                 .thenReturn(Optional.of(testSchedule));

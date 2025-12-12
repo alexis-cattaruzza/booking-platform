@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -188,11 +189,14 @@ class BusinessServiceTest {
         testBusiness.setIsActive(false);
         when(businessRepository.findBySlug(TEST_SLUG)).thenReturn(Optional.of(testBusiness));
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> businessService.getBusinessBySlug(TEST_SLUG));
+        // When
+        BusinessResponse response = businessService.getBusinessBySlug(TEST_SLUG);
 
-        assertEquals("Business is not active", exception.getMessage());
+        // Then
+        assertNotNull(response);
+        assertEquals(testBusiness.getSlug(), response.getSlug());
+        assertFalse(response.getIsActive());
+        verify(businessRepository).findBySlug(TEST_SLUG);
     }
 
     @Test
@@ -325,13 +329,17 @@ class BusinessServiceTest {
         // Given
         testBusiness.setIsActive(false);
         when(businessRepository.findBySlug(TEST_SLUG)).thenReturn(Optional.of(testBusiness));
+        when(serviceRepository.findByBusinessIdAndIsActiveTrue(testBusiness.getId()))
+                .thenReturn(Collections.emptyList());
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> businessService.getBusinessServices(TEST_SLUG));
+        // When
+        List<ServiceResponse> responses = businessService.getBusinessServices(TEST_SLUG);
 
-        assertEquals("Business is not active", exception.getMessage());
-        verify(serviceRepository, never()).findByBusinessIdAndIsActiveTrue(any());
+        // Then
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+        verify(businessRepository).findBySlug(TEST_SLUG);
+        verify(serviceRepository).findByBusinessIdAndIsActiveTrue(testBusiness.getId());
     }
 
     @Test
