@@ -66,6 +66,10 @@ public class Appointment {
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancelled_by", length = 20)
+    private CancelledBy cancelledBy;
+
     @Column(name = "cancellation_token", unique = true, length = 64)
     private String cancellationToken;
 
@@ -97,5 +101,10 @@ public class Appointment {
         CANCELLED,
         COMPLETED,
         NO_SHOW
+    }
+
+    public enum CancelledBy {
+        CUSTOMER,
+        BUSINESS
     }
 }

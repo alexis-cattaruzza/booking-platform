@@ -44,6 +44,11 @@ public class AppointmentService {
         Business business = businessRepository.findBySlug(businessSlug)
                 .orElseThrow(() -> new NotFoundException("Business not found"));
 
+        // SECURITY: Check if business is suspended or deleted
+        if (business.getDeletedAt() != null) {
+            throw new NotFoundException("Ce professionnel n'est plus disponible");
+        }
+
         // Get service
         com.booking.api.model.Service service = serviceRepository
                 .findByIdAndBusinessId(request.getServiceId(), business.getId())
@@ -150,9 +155,12 @@ public class AppointmentService {
         return toAppointmentResponse(appointment);
     }
 
+    /**
+     * Cancel appointment by customer using public cancellation token
+     */
     @Transactional
     @CacheEvict(value = "availability", allEntries = true)
-    public void cancelAppointment(String cancellationToken) {
+    public void cancelAppointment(String cancellationToken, String cancellationReason) {
         // Load appointment with all relations needed for email (business, service, customer)
         Appointment appointment = appointmentRepository.findByCancellationTokenWithRelations(cancellationToken)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));
@@ -188,10 +196,47 @@ public class AppointmentService {
         }
 
         appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
+        appointment.setCancellationReason(cancellationReason);
+        appointment.setCancelledBy(Appointment.CancelledBy.CUSTOMER);
+        appointment.setCancelledAt(LocalDateTime.now());
         appointmentRepository.save(appointment);
 
-        // Send cancellation email
-        emailService.sendCancellationEmail(appointment);
+        // Send cancellation emails (to both customer and business)
+        emailService.sendCustomerCancellationEmail(appointment);
+        emailService.sendBusinessCancellationNotification(appointment);
+    }
+
+    /**
+     * Cancel appointment by business owner
+     */
+    @Transactional
+    @CacheEvict(value = "availability", allEntries = true)
+    public void cancelAppointmentByBusiness(UUID appointmentId, String cancellationReason, UUID businessId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
+
+        // Verify that the appointment belongs to the business
+        if (!appointment.getBusiness().getId().equals(businessId)) {
+            throw new BadRequestException("Unauthorized to cancel this appointment");
+        }
+
+        if (appointment.getStatus() == Appointment.AppointmentStatus.CANCELLED) {
+            throw new ConflictException("Appointment is already cancelled");
+        }
+
+        if (appointment.getStatus() == Appointment.AppointmentStatus.COMPLETED) {
+            throw new BadRequestException("Cannot cancel a completed appointment");
+        }
+
+        // Business can cancel even past appointments (for administrative reasons)
+        appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
+        appointment.setCancellationReason(cancellationReason);
+        appointment.setCancelledBy(Appointment.CancelledBy.BUSINESS);
+        appointment.setCancelledAt(LocalDateTime.now());
+        appointmentRepository.save(appointment);
+
+        // Send cancellation email to customer (notifying that business cancelled)
+        emailService.sendBusinessInitiatedCancellationEmail(appointment);
     }
 
     @Transactional(readOnly = true)

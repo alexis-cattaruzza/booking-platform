@@ -1,6 +1,7 @@
 package com.booking.api.controller;
 
 import com.booking.api.dto.request.AppointmentRequest;
+import com.booking.api.dto.request.CancelAppointmentRequest;
 import com.booking.api.dto.response.AppointmentResponse;
 import com.booking.api.service.AppointmentService;
 import jakarta.validation.Valid;
@@ -31,8 +32,10 @@ public class BookingController {
     }
 
     @PostMapping("/cancel/{cancellationToken}")
-    public ResponseEntity<Void> cancelAppointment(@PathVariable String cancellationToken) {
-        appointmentService.cancelAppointment(cancellationToken);
+    public ResponseEntity<Void> cancelAppointment(
+            @PathVariable String cancellationToken,
+            @Valid @RequestBody CancelAppointmentRequest request) {
+        appointmentService.cancelAppointment(cancellationToken, request.getCancellationReason());
         return ResponseEntity.ok().build();
     }
 }

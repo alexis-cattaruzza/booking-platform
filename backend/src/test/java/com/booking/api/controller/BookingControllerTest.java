@@ -1,6 +1,7 @@
 package com.booking.api.controller;
 
 import com.booking.api.dto.request.AppointmentRequest;
+import com.booking.api.dto.request.CancelAppointmentRequest;
 import com.booking.api.dto.request.CustomerRequest;
 import com.booking.api.dto.response.AppointmentResponse;
 import com.booking.api.exception.ConflictException;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -131,18 +133,38 @@ class BookingControllerTest {
 
     @Test
     void cancelAppointment_Success() throws Exception {
-        doNothing().when(appointmentService).cancelAppointment(token);
+        CancelAppointmentRequest cancelRequest = new CancelAppointmentRequest("Imprévu professionnel");
+        doNothing().when(appointmentService).cancelAppointment(eq(token), any(String.class));
 
-        mockMvc.perform(post("/api/booking/cancel/{cancellationToken}", token))
+        mockMvc.perform(post("/api/booking/cancel/{cancellationToken}", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
                 .andExpect(status().isOk());
+
+        verify(appointmentService, times(1)).cancelAppointment(eq(token), eq("Imprévu professionnel"));
     }
 
     @Test
     void cancelAppointment_AlreadyCancelled() throws Exception {
+        CancelAppointmentRequest cancelRequest = new CancelAppointmentRequest("Imprévu professionnel");
         doThrow(new ConflictException("Appointment is already cancelled"))
-                .when(appointmentService).cancelAppointment(token);
+                .when(appointmentService).cancelAppointment(eq(token), any(String.class));
 
-        mockMvc.perform(post("/api/booking/cancel/{cancellationToken}", token))
+        mockMvc.perform(post("/api/booking/cancel/{cancellationToken}", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void cancelAppointment_MissingReason() throws Exception {
+        CancelAppointmentRequest cancelRequest = new CancelAppointmentRequest("");
+
+        mockMvc.perform(post("/api/booking/cancel/{cancellationToken}", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cancelRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(appointmentService, never()).cancelAppointment(any(), any());
     }
 }

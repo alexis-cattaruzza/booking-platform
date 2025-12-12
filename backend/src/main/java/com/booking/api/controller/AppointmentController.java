@@ -1,5 +1,6 @@
 package com.booking.api.controller;
 
+import com.booking.api.dto.request.CancelAppointmentRequest;
 import com.booking.api.dto.response.AppointmentResponse;
 import com.booking.api.model.Appointment;
 import com.booking.api.model.Business;
@@ -7,6 +8,7 @@ import com.booking.api.model.User;
 import com.booking.api.repository.BusinessRepository;
 import com.booking.api.repository.UserRepository;
 import com.booking.api.service.AppointmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,22 @@ public class AppointmentController {
                 business.getId(), appointmentId, status);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Cancel appointment by business with mandatory reason
+     * SECURITY: Verifies appointment belongs to authenticated business
+     */
+    @PostMapping("/{appointmentId}/cancel")
+    public ResponseEntity<Void> cancelAppointment(
+            @PathVariable UUID appointmentId,
+            @Valid @RequestBody CancelAppointmentRequest request) {
+
+        Business business = getAuthenticatedUserBusiness();
+        appointmentService.cancelAppointmentByBusiness(
+                appointmentId, request.getCancellationReason(), business.getId());
+
+        return ResponseEntity.ok().build();
     }
 
     private Business getAuthenticatedUserBusiness() {
