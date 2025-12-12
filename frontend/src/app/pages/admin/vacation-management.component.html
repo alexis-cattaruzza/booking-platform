@@ -1,0 +1,125 @@
+<div class="vacation-management">
+  <div class="header">
+    <h2>Gestion des Vacances</h2>
+    <p class="subtitle">Gérez vos périodes de fermeture et de congés</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+  </div>
+
+  <!-- Formulaire -->
+  <div class="form-card">
+    <h3>{{ editingHolidayId ? 'Modifier les vacances' : 'Ajouter des vacances' }}</h3>
+
+    <form [formGroup]="holidayForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Date de début</label>
+          <input
+            type="date"
+            id="startDate"
+            formControlName="startDate"
+            (change)="onDatesChange()"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">Date de fin</label>
+          <input
+            type="date"
+            id="endDate"
+            formControlName="endDate"
+            (change)="onDatesChange()"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reason">Raison (optionnel)</label>
+        <input
+          type="text"
+          id="reason"
+          formControlName="reason"
+          placeholder="Ex: Vacances d'été, Congés de Noël..."
+          class="form-control">
+        <small>{{ holidayForm.get('reason')?.value?.length || 0 }}/500 caractères</small>
+      </div>
+
+      <!-- Preview des rendez-vous affectés -->
+      <div *ngIf="showPreview" class="preview-warning">
+        <strong>⚠️ Attention</strong>
+        <p>{{ affectedAppointments.length }} rendez-vous seront automatiquement annulés pendant cette période.</p>
+        <p class="help-text">Les clients concernés seront notifiés par email.</p>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          *ngIf="editingHolidayId"
+          (click)="resetForm()"
+          class="btn btn-secondary">
+          Annuler
+        </button>
+        <button
+          type="submit"
+          [disabled]="holidayForm.invalid || loading"
+          class="btn btn-primary">
+          {{ loading ? 'Enregistrement...' : (editingHolidayId ? 'Modifier' : 'Créer les vacances') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Liste des vacances -->
+  <div class="holidays-list">
+    <h3>Vos périodes de vacances</h3>
+
+    <div *ngIf="holidays.length === 0" class="empty-state">
+      <p>Aucune période de vacances programmée</p>
+    </div>
+
+    <div *ngFor="let holiday of holidays" class="holiday-card"
+         [class.current]="isCurrent(holiday.startDate, holiday.endDate)"
+         [class.past]="isPast(holiday.endDate)">
+
+      <div class="holiday-header">
+        <div class="holiday-dates">
+          <span class="date-badge" *ngIf="isCurrent(holiday.startDate, holiday.endDate)">En cours</span>
+          <span class="date-badge past" *ngIf="isPast(holiday.endDate)">Passées</span>
+          <span class="date-badge upcoming" *ngIf="isUpcoming(holiday.startDate) && !isCurrent(holiday.startDate, holiday.endDate)">À venir</span>
+
+          <div class="dates">
+            <strong>{{ formatDate(holiday.startDate) }}</strong>
+            <span class="separator">→</span>
+            <strong>{{ formatDate(holiday.endDate) }}</strong>
+          </div>
+        </div>
+
+        <div class="holiday-actions" *ngIf="!isPast(holiday.endDate)">
+          <button
+            (click)="editHoliday(holiday)"
+            class="btn-icon"
+            title="Modifier">
+            ✏️
+          </button>
+          <button
+            (click)="deleteHoliday(holiday.id)"
+            class="btn-icon delete"
+            title="Supprimer">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="holiday.reason" class="holiday-reason">
+        {{ holiday.reason }}
+      </div>
+    </div>
+  </div>
+</div>

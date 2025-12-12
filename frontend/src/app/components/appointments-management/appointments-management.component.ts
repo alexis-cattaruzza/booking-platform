@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AppointmentService } from '../../services/appointment.service';
 import { Appointment, AppointmentStatus } from '../../models/business.model';
 import { BusinessCancelModalComponent, AppointmentToCancelDetails } from '../../shared/business-cancel-modal/business-cancel-modal.component';
+import { HolidayService, Holiday } from '../../services/holiday.service';
 
 @Component({
   selector: 'app-appointments-management',
@@ -22,6 +23,9 @@ export class AppointmentsManagementComponent implements OnInit {
   // Cancel modal
   isCancelModalOpen = false;
   appointmentToCancel: AppointmentToCancelDetails | null = null;
+
+  // Holidays
+  holidays: Holiday[] = [];
 
   // View mode
   viewMode: 'list' | 'calendar' = 'list';
@@ -55,11 +59,15 @@ export class AppointmentsManagementComponent implements OnInit {
     { value: 'NO_SHOW', label: 'Absent', color: 'orange' }
   ];
 
-  constructor(private appointmentService: AppointmentService) {}
+  constructor(
+    private appointmentService: AppointmentService,
+    private holidayService: HolidayService
+  ) {}
 
   ngOnInit() {
     this.initializeWeek();
     this.loadAppointments();
+    this.loadHolidays();
   }
 
   initializeWeek() {
@@ -124,6 +132,18 @@ export class AppointmentsManagementComponent implements OnInit {
       error: (err) => {
         this.error = err.error?.message || 'Erreur lors du chargement des rendez-vous';
         this.loading = false;
+      }
+    });
+  }
+
+  loadHolidays() {
+    this.holidayService.getMyHolidays().subscribe({
+      next: (holidays) => {
+        this.holidays = holidays;
+      },
+      error: (err) => {
+        console.error('Error loading holidays:', err);
+        // Don't show error to user, just log it
       }
     });
   }
@@ -391,5 +411,58 @@ export class AppointmentsManagementComponent implements OnInit {
 
   toggleViewMode() {
     this.viewMode = this.viewMode === 'list' ? 'calendar' : 'list';
+  }
+
+  // Holiday helper methods
+  isDateOnHoliday(date: Date): boolean {
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+
+    return this.holidays.some(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+  }
+
+  getHolidayForDate(date: Date): Holiday | null {
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+
+    const holiday = this.holidays.find(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+
+    return holiday || null;
+  }
+
+  getActiveHolidaysInfo(): string {
+    if (this.holidays.length === 0) return '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeHolidays = this.holidays.filter(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      return endDate >= today;
+    }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    if (activeHolidays.length === 0) return '';
+
+    return activeHolidays.map(holiday => {
+      const start = new Date(holiday.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const end = new Date(holiday.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const reason = holiday.reason || 'Vacances';
+      return `${reason}: du ${start} au ${end}`;
+    }).join(' | ');
   }
 }

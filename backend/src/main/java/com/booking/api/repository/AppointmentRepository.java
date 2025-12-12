@@ -77,4 +77,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findByBusinessIdAndAppointmentDatetimeAfter(UUID businessId, LocalDateTime dateTime);
 
     List<Appointment> findByCustomerIdAndAppointmentDatetimeAfter(UUID customerId, LocalDateTime dateTime);
+
+    List<Appointment> findByStatusAndAppointmentDatetimeBefore(AppointmentStatus status, LocalDateTime dateTime);
+
+    List<Appointment> findByBusinessIdAndAppointmentDatetimeBetweenAndStatusNot(
+        UUID businessId,
+        LocalDateTime start,
+        LocalDateTime end,
+        AppointmentStatus status
+    );
 }

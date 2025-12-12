@@ -37,4 +37,12 @@ export class ApiService {
   postPublic<T>(endpoint: string, body: any): Observable<T> {
     return this.http.post<T>(`${this.apiUrl}${endpoint}`, body);
   }
+
+  getBlob(endpoint: string, params?: any): Observable<Blob> {
+    const options = {
+      responseType: 'blob' as 'json',
+      params: params ? new HttpParams({ fromObject: params }) : undefined
+    };
+    return this.http.get<Blob>(`${this.apiUrl}${endpoint}`, options);
+  }
 }

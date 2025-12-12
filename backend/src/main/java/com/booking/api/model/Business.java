@@ -100,6 +100,10 @@ public class Business {
     @Builder.Default
     private List<Customer> customers = new ArrayList<>();
 
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BusinessHoliday> holidays = new ArrayList<>();
+
     public enum BusinessCategory {
         HAIRDRESSER,
         BEAUTY,

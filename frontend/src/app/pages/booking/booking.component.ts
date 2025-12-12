@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookingService } from '../../services/booking.service';
 import { BusinessService } from '../../services/business.service';
+import { HolidayService, Holiday } from '../../services/holiday.service';
 import { Business, Service } from '../../models/business.model';
 import { AppointmentRequest, AvailabilityResponse, TimeSlot } from '../../models/booking.model';
 
@@ -21,12 +22,15 @@ export class BookingComponent implements OnInit {
   selectedDate: Date | null = null;
   selectedTimeSlot: TimeSlot | null = null;
   availableSlots: TimeSlot[] = [];
+  holidays: Holiday[] = [];
 
   customerForm: FormGroup;
   loading = false;
   loadingAvailability = false;
   error = '';
   success = '';
+  businessUnavailable = false;
+  unavailableMessage = '';
 
   step: 'service' | 'datetime' | 'customer' | 'confirmation' = 'service';
   slug = '';
@@ -59,7 +63,8 @@ export class BookingComponent implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private businessService: BusinessService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private holidayService: HolidayService
   ) {
     this.customerForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.maxLength(100)]],
@@ -85,7 +90,17 @@ export class BookingComponent implements OnInit {
     this.businessService.getBusinessBySlug(this.slug).subscribe({
       next: (business) => {
         this.business = business;
+
+        // Check if business is suspended, deleted, or inactive
+        if (business.deletedAt || !business.isActive) {
+          this.businessUnavailable = true;
+          this.unavailableMessage = 'Ce professionnel n\'accepte plus de réservations en ligne pour le moment.';
+          this.loading = false;
+          return;
+        }
+
         this.loadServices();
+        this.loadHolidays();
       },
       error: (err) => {
         this.error = err.error?.message || 'Business introuvable';
@@ -103,6 +118,18 @@ export class BookingComponent implements OnInit {
       error: (err: any) => {
         this.error = err.error?.message || 'Erreur lors du chargement des services';
         this.loading = false;
+      }
+    });
+  }
+
+  loadHolidays() {
+    this.holidayService.getBusinessHolidays(this.slug).subscribe({
+      next: (holidays) => {
+        this.holidays = holidays;
+      },
+      error: (err) => {
+        console.error('Error loading holidays:', err);
+        // Don't show error to user, just log it
       }
     });
   }
@@ -157,7 +184,80 @@ export class BookingComponent implements OnInit {
   isDateSelectable(date: Date): boolean {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return date >= today;
+
+    // Check if date is in the past
+    if (date < today) return false;
+
+    // Check if date is during a holiday
+    if (this.isDateOnHoliday(date)) return false;
+
+    return true;
+  }
+
+  isDateOnHoliday(date: Date): boolean {
+    // Create a copy to avoid mutating the original date
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+
+    return this.holidays.some(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+
+      // Reset time to compare dates only
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+  }
+
+  getHolidayForDate(date: Date): Holiday | null {
+    const holiday = this.holidays.find(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+
+      // Reset time to compare dates only
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+
+    return holiday || null;
+  }
+
+  getActiveHolidaysInfo(): string {
+    if (this.holidays.length === 0) return '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeHolidays = this.holidays.filter(holiday => {
+      const startDate = new Date(holiday.startDate);
+      const endDate = new Date(holiday.endDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+
+      return endDate >= today;
+    }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    if (activeHolidays.length === 0) return '';
+
+    return activeHolidays.map(holiday => {
+      const start = new Date(holiday.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const end = new Date(holiday.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const reason = holiday.reason || 'Vacances';
+      return `${reason}: du ${start} au ${end}`;
+    }).join(' | ');
+  }
+
+  formatDateForComparison(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   isDateSelected(date: Date): boolean {
@@ -202,19 +302,21 @@ export class BookingComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    // Create appointment datetime without timezone issues
+    // Create appointment datetime in local timezone (no UTC conversion)
     const year = this.selectedDate.getFullYear();
-    const month = this.selectedDate.getMonth();
-    const day = this.selectedDate.getDate();
+    const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(this.selectedDate.getDate()).padStart(2, '0');
     const [hours, minutes] = this.selectedTimeSlot.startTime.split(':');
-    const appointmentDateTime = new Date(year, month, day, parseInt(hours), parseInt(minutes), 0);
+
+    // Format as local datetime string: YYYY-MM-DDTHH:mm:ss (no Z suffix, no timezone conversion)
+    const appointmentDatetimeString = `${year}-${month}-${day}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
 
     const formValue = this.customerForm.value;
     const phone = formValue.phoneCountry + formValue.phoneNumber;
 
     const request: AppointmentRequest = {
       serviceId: this.selectedService.id,
-      appointmentDatetime: appointmentDateTime.toISOString(),
+      appointmentDatetime: appointmentDatetimeString,
       customer: {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
@@ -260,5 +362,10 @@ export class BookingComponent implements OnInit {
 
   getMonthYear(): string {
     return this.currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
+
+  formatHolidayDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return this.formatDate(date);
   }
 }

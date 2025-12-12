@@ -1,28 +1,98 @@
 <div class="min-h-screen bg-gray-50 py-8 px-4">
   <div class="max-w-4xl mx-auto">
-    <!-- Page Title Header -->
-    @if (business && step !== 'confirmation') {
-      <div class="mb-6 text-center">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          Prendre rendez-vous chez {{ business.businessName }}
-        </h1>
-        <p class="text-gray-600">Réservez votre créneau en quelques clics</p>
-      </div>
-    }
-
-    @if (error) {
-      <div class="mb-6 rounded-md bg-red-50 p-4">
-        <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
-      </div>
-    }
-
     @if (loading && !business) {
       <div class="flex justify-center items-center py-12">
         <div class="text-gray-600">Chargement...</div>
       </div>
     }
 
-    @if (business && step !== 'confirmation') {
+    <!-- Business Unavailable - Full Page -->
+    @if (businessUnavailable && business) {
+      <div class="text-center py-12">
+        <div class="mx-auto w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-12 h-12 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+          Service temporairement indisponible
+        </h1>
+
+        <div class="bg-white shadow-lg rounded-lg p-8 mb-6 max-w-2xl mx-auto">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-3">{{ business.businessName }}</h2>
+
+          <div class="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 p-6 mb-6 text-left">
+            <p class="text-lg text-orange-900 font-semibold mb-2">
+              ⚠️ Réservations en ligne indisponibles
+            </p>
+            <p class="text-base text-orange-800">
+              Ce professionnel n'accepte plus de réservations en ligne pour le moment.
+            </p>
+          </div>
+
+          @if (business.description) {
+            <div class="mb-6 text-left">
+              <h3 class="font-semibold text-gray-900 mb-2">À propos</h3>
+              <p class="text-gray-600">{{ business.description }}</p>
+            </div>
+          }
+
+          <div class="bg-gray-50 rounded-lg p-6 text-left">
+            <h3 class="font-semibold text-gray-900 mb-4">Informations de contact</h3>
+            <div class="space-y-3 text-gray-700">
+              @if (business.address) {
+                <div class="flex items-start">
+                  <span class="mr-3">📍</span>
+                  <div>
+                    <p>{{ business.address }}</p>
+                    <p>{{ business.postalCode }} {{ business.city }}</p>
+                  </div>
+                </div>
+              }
+              <div class="flex items-center">
+                <span class="mr-3">📞</span>
+                <a href="tel:{{ business.phone }}" class="text-blue-600 hover:underline">
+                  {{ business.phone }}
+                </a>
+              </div>
+              <div class="flex items-center">
+                <span class="mr-3">✉️</span>
+                <a href="mailto:{{ business.email }}" class="text-blue-600 hover:underline">
+                  {{ business.email }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 p-4 bg-blue-50 rounded-lg text-left">
+            <p class="text-sm text-blue-900">
+              <strong>💡 Conseil :</strong> Pour prendre rendez-vous, veuillez contacter directement le professionnel par téléphone ou email.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Normal Booking Flow - Only shown if business is available -->
+    @if (!businessUnavailable && !loading) {
+      @if (error && !business) {
+        <div class="mb-6 rounded-md bg-red-50 p-4">
+          <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
+        </div>
+      }
+
+      <!-- Page Title Header -->
+      @if (business && step !== 'confirmation') {
+        <div class="mb-6 text-center">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            Prendre rendez-vous chez {{ business.businessName }}
+          </h1>
+          <p class="text-gray-600">Réservez votre créneau en quelques clics</p>
+        </div>
+      }
+
+      @if (business && step !== 'confirmation') {
       <!-- Business Header -->
       <div class="bg-white shadow rounded-lg p-6 mb-6">
         <h2 class="text-xl font-semibold text-gray-900">{{ business.businessName }}</h2>
@@ -114,6 +184,28 @@
           <p class="text-sm text-gray-600">{{ selectedService.durationMinutes }} min - {{ formatPrice(selectedService.price) }}</p>
         </div>
 
+        <!-- Holidays Information Banner -->
+        @if (getActiveHolidaysInfo()) {
+          <div class="mb-6 p-4 bg-purple-50 border-l-4 border-purple-400 rounded-r-lg shadow-sm">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="ml-3 flex-1">
+                <h3 class="text-sm font-semibold text-purple-800 mb-1">Périodes de fermeture</h3>
+                <p class="text-sm text-purple-700 leading-relaxed">
+                  🏖️ {{ getActiveHolidaysInfo() }}
+                </p>
+                <p class="mt-2 text-xs text-purple-600 italic">
+                  Les dates en violet avec 🏖️ dans le calendrier ne sont pas disponibles à la réservation.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Calendar -->
         <div class="mb-6">
           <div class="flex items-center justify-between mb-4">
@@ -138,13 +230,37 @@
                 <button
                   (click)="selectDate(day)"
                   [disabled]="!isDateSelectable(day)"
-                  [class]="isDateSelected(day) ? 'bg-blue-600 text-white' : isDateSelectable(day) ? 'bg-white hover:bg-blue-50' : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
-                  class="aspect-square flex items-center justify-center rounded-lg border transition-colors"
+                  [class]="isDateSelected(day) ? 'bg-blue-600 text-white' : isDateOnHoliday(day) ? 'bg-purple-100 text-purple-600 cursor-not-allowed border-purple-300' : isDateSelectable(day) ? 'bg-white hover:bg-blue-50' : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
+                  class="aspect-square flex flex-col items-center justify-center rounded-lg border transition-colors relative"
+                  [title]="isDateOnHoliday(day) ? (getHolidayForDate(day)?.reason || 'Fermeture') : ''"
                 >
-                  {{ day.getDate() }}
+                  <span>{{ day.getDate() }}</span>
+                  @if (isDateOnHoliday(day)) {
+                    <span class="text-xs">🏖️</span>
+                  }
                 </button>
               }
             }
+          </div>
+
+          <!-- Calendar Legend -->
+          <div class="mt-4 flex flex-wrap gap-4 text-xs text-gray-600 justify-center">
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 bg-blue-600 rounded border border-blue-600"></div>
+              <span>Date sélectionnée</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 bg-white border border-gray-300 rounded"></div>
+              <span>Date disponible</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 bg-purple-100 border-2 border-purple-400 rounded flex items-center justify-center text-base">🏖️</div>
+              <span>Fermé (vacances)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 bg-gray-100 border border-gray-300 rounded"></div>
+              <span>Date passée</span>
+            </div>
           </div>
         </div>
 
@@ -160,9 +276,21 @@
             }
 
             @if (!loadingAvailability && availableSlots.length === 0) {
-              <div class="text-center py-8 text-gray-500">
-                Aucun créneau disponible pour cette date
-              </div>
+              @if (isDateOnHoliday(selectedDate)) {
+                <div class="text-center py-8">
+                  <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-3">
+                    <span class="text-3xl">🏖️</span>
+                  </div>
+                  <h4 class="text-base font-medium text-purple-800 mb-1">Établissement fermé</h4>
+                  <p class="text-sm text-purple-600">
+                    {{ getHolidayForDate(selectedDate)?.reason || 'Vacances' }}
+                  </p>
+                </div>
+              } @else {
+                <div class="text-center py-8 text-gray-500">
+                  Aucun créneau disponible pour cette date
+                </div>
+              }
             }
 
             @if (!loadingAvailability && availableSlots.length > 0) {
@@ -346,6 +474,7 @@
           </div>
         }
       </div>
+    }
     }
   </div>
 </div>

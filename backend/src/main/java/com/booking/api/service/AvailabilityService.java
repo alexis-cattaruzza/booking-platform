@@ -5,6 +5,7 @@ import com.booking.api.model.Appointment;
 import com.booking.api.model.Business;
 import com.booking.api.model.Schedule;
 import com.booking.api.repository.AppointmentRepository;
+import com.booking.api.repository.BusinessHolidayRepository;
 import com.booking.api.repository.BusinessRepository;
 import com.booking.api.repository.ScheduleExceptionRepository;
 import com.booking.api.repository.ScheduleRepository;
@@ -33,6 +34,7 @@ public class AvailabilityService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleExceptionRepository scheduleExceptionRepository;
     private final AppointmentRepository appointmentRepository;
+    private final BusinessHolidayRepository holidayRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "availability", key = "#businessSlug + '_' + #serviceId + '_' + #date")
@@ -55,6 +57,15 @@ public class AvailabilityService {
 
         // Check if date is in the past
         if (date.isBefore(LocalDate.now())) {
+            return AvailabilityResponse.builder()
+                    .date(date)
+                    .availableSlots(new ArrayList<>())
+                    .build();
+        }
+
+        // Check if business is on holiday
+        if (holidayRepository.existsByBusinessIdAndDate(business.getId(), date)) {
+            log.info("Business is on holiday on {}", date);
             return AvailabilityResponse.builder()
                     .date(date)
                     .availableSlots(new ArrayList<>())

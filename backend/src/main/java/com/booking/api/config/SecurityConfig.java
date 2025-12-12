@@ -65,6 +65,7 @@ public class SecurityConfig {
                                 "/api/booking/**",
                                 "/api/availability/**",
                                 "/api/businesses/*/services",
+                                "/api/businesses/*/holidays",
                                 "/api/businesses/*",
                                 "/actuator/health", // Only health endpoint public
                                 "/error"

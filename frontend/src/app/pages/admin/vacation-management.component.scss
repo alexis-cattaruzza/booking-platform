@@ -1,0 +1,272 @@
+.vacation-management {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .header {
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #718096;
+      font-size: 1rem;
+    }
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+
+    &.alert-error {
+      background-color: #fed7d7;
+      color: #c53030;
+      border: 1px solid #fc8181;
+    }
+
+    &.alert-success {
+      background-color: #c6f6d5;
+      color: #2f855a;
+      border: 1px solid #9ae6b4;
+    }
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        display: block;
+        font-weight: 500;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: #4299e1;
+          box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+      }
+
+      small {
+        display: block;
+        margin-top: 0.25rem;
+        color: #a0aec0;
+        font-size: 0.875rem;
+      }
+    }
+
+    .preview-warning {
+      background: #fffaf0;
+      border: 1px solid #f6ad55;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+
+      strong {
+        color: #c05621;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        margin: 0.25rem 0;
+        color: #744210;
+      }
+
+      .help-text {
+        font-size: 0.875rem;
+        color: #975a16;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+  }
+
+  .holidays-list {
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #a0aec0;
+      background: white;
+      border-radius: 12px;
+      border: 2px dashed #e2e8f0;
+    }
+
+    .holiday-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid #cbd5e0;
+      transition: all 0.2s;
+
+      &:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      &.current {
+        border-left-color: #48bb78;
+        background: #f0fff4;
+      }
+
+      &.past {
+        opacity: 0.6;
+        border-left-color: #a0aec0;
+      }
+
+      .holiday-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        .holiday-dates {
+          flex: 1;
+
+          .date-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            background: #e2e8f0;
+            color: #4a5568;
+
+            &.upcoming {
+              background: #bee3f8;
+              color: #2c5282;
+            }
+
+            &.past {
+              background: #e2e8f0;
+              color: #718096;
+            }
+          }
+
+          .dates {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+
+            .separator {
+              color: #a0aec0;
+            }
+          }
+        }
+
+        .holiday-actions {
+          display: flex;
+          gap: 0.5rem;
+        }
+      }
+
+      .holiday-reason {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        color: #4a5568;
+        font-style: italic;
+      }
+    }
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+
+    &.btn-primary {
+      background: #4299e1;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #3182ce;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &.btn-secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+
+      &:hover {
+        background: #cbd5e0;
+      }
+    }
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #edf2f7;
+    }
+
+    &.delete:hover {
+      background: #fed7d7;
+    }
+  }
+}

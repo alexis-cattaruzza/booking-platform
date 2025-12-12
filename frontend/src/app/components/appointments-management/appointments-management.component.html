@@ -139,6 +139,25 @@
   <!-- CALENDAR VIEW -->
   @if (!loading && viewMode === 'calendar') {
     <div>
+      <!-- Holidays Information Banner -->
+      @if (getActiveHolidaysInfo()) {
+        <div class="mb-6 p-4 bg-purple-50 border-l-4 border-purple-400">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-purple-800">Périodes de fermeture</h3>
+              <p class="mt-1 text-sm text-purple-700">
+                🏖️ {{ getActiveHolidaysInfo() }}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Week Navigation -->
       <div class="mb-4 flex items-center justify-between">
         <button
@@ -168,17 +187,25 @@
       <div class="grid grid-cols-7 gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50">
         @for (day of calendarDays; track $index) {
           <div
-            [class]="isToday(day) ? 'bg-blue-50 border-2 border-blue-500' : 'bg-white border border-gray-200'"
-            class="rounded-lg p-2 min-h-[200px]"
+            [class]="isToday(day) ? 'bg-blue-50 border-2 border-blue-500' :
+                     isDateOnHoliday(day) ? 'bg-purple-50 border-2 border-purple-300' :
+                     'bg-white border border-gray-200'"
+            class="rounded-lg p-2 min-h-[200px] relative"
+            [title]="isDateOnHoliday(day) ? (getHolidayForDate(day)?.reason || 'Fermeture') : ''"
           >
             <!-- Day Header -->
             <div class="text-center mb-2 pb-2 border-b border-gray-200">
               <div class="text-xs font-medium text-gray-600">{{ getDayName(day) }}</div>
               <div
-                [class]="isToday(day) ? 'text-blue-600 font-bold' : 'text-gray-900'"
-                class="text-lg"
+                [class]="isToday(day) ? 'text-blue-600 font-bold' :
+                         isDateOnHoliday(day) ? 'text-purple-600 font-bold' :
+                         'text-gray-900'"
+                class="text-lg flex items-center justify-center gap-1"
               >
                 {{ getDayNumber(day) }}
+                @if (isDateOnHoliday(day)) {
+                  <span class="text-sm">🏖️</span>
+                }
               </div>
               <div class="text-xs text-gray-500">{{ getMonthName(day) }}</div>
             </div>
