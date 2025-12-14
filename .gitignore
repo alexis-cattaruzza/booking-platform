@@ -19,6 +19,7 @@ logs/
 .env.local
 QUICK-DEPLOY.md
 DEPLOYMENT-FRONTEND.md
+SAAS_PLAN.md
 /docs/notes.txt
 
 # Notes

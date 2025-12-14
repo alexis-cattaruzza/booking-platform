@@ -1,0 +1,187 @@
+<app-navbar-landing></app-navbar-landing>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-container">
+    <span class="section-badge">Contact</span>
+    <h1 class="hero-title">Une question ? Contactez-nous</h1>
+    <p class="hero-description">
+      Notre équipe est là pour vous aider. Envoyez-nous un message et nous vous répondrons dans les plus brefs délais.
+    </p>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section">
+  <div class="contact-container">
+    <div class="contact-grid">
+      <!-- Contact Info -->
+      <div class="contact-info">
+        <h2>Nos coordonnées</h2>
+        <p>Vous préférez nous contacter directement ? Voici nos coordonnées :</p>
+
+        <div class="info-items">
+          <div class="info-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <div>
+              <h4>Email</h4>
+              <p>contact&#64;bookingpro.fr</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4>Horaires</h4>
+              <p>Lun-Ven : 9h-18h</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4>Support</h4>
+              <p>Réponse sous 24h</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-link">
+          <h3>Questions fréquentes</h3>
+          <p>Consultez notre <a routerLink="/pricing">FAQ</a> pour trouver rapidement des réponses aux questions les plus courantes.</p>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="contact-form-wrapper">
+        <form class="contact-form" (ngSubmit)="onSubmit()" #contactForm="ngForm">
+          <h2>Envoyez-nous un message</h2>
+
+          <div class="form-group">
+            <label for="name">Nom complet <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              [(ngModel)]="formData.name"
+              required
+              placeholder="Jean Dupont"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="formData.email"
+              required
+              placeholder="jean.dupont@exemple.fr"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Sujet</label>
+            <select
+              id="subject"
+              name="subject"
+              [(ngModel)]="formData.subject"
+              class="form-input"
+            >
+              <option value="">Sélectionnez un sujet</option>
+              <option value="demo">Demande de démo</option>
+              <option value="pricing">Question sur les tarifs</option>
+              <option value="technical">Support technique</option>
+              <option value="feature">Demande de fonctionnalité</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea
+              id="message"
+              name="message"
+              [(ngModel)]="formData.message"
+              required
+              rows="6"
+              placeholder="Décrivez votre demande..."
+              class="form-input"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn-submit"
+              [disabled]="isSubmitting || !contactForm.valid"
+            >
+              <span *ngIf="!isSubmitting">Envoyer le message</span>
+              <span *ngIf="isSubmitting">Envoi en cours...</span>
+            </button>
+          </div>
+
+          <div class="form-message success" *ngIf="submitSuccess">
+            ✓ Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.
+          </div>
+
+          <div class="form-message error" *ngIf="submitError">
+            ✗ {{ submitError }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>BookingPro</span>
+        </div>
+        <p class="footer-tagline">La solution de gestion de rendez-vous pour professionnels</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Produit</h4>
+          <a routerLink="/features">Fonctionnalités</a>
+          <a routerLink="/pricing">Tarifs</a>
+          <a routerLink="/how-it-works">Comment ça marche</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Support</h4>
+          <a routerLink="/contact">Contact</a>
+          <a routerLink="/pricing" fragment="faq">FAQ</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Légal</h4>
+          <a routerLink="/legal/mentions">Mentions légales</a>
+          <a routerLink="/legal/privacy">Politique de confidentialité</a>
+          <a routerLink="/legal/terms">CGU</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 BookingPro. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>

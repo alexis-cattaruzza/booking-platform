@@ -1,0 +1,192 @@
+<app-navbar-landing></app-navbar-landing>
+
+<!-- Hero Section -->
+<section class="pricing-hero">
+  <div class="hero-container">
+    <span class="section-badge">Tarifs</span>
+    <h1 class="hero-title">Un plan adapté à chaque besoin</h1>
+    <p class="hero-description">
+      Commencez gratuitement et évoluez selon votre activité. Sans engagement, annulez quand vous voulez.
+    </p>
+
+    <!-- Billing Toggle -->
+    <div class="billing-toggle">
+      <span class="toggle-label" [class.active]="!isYearly">Mensuel</span>
+      <button class="toggle-switch" (click)="toggleBilling()" [class.yearly]="isYearly">
+        <span class="toggle-slider"></span>
+      </button>
+      <span class="toggle-label" [class.active]="isYearly">
+        Annuel
+        <span class="savings-badge">-20%</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Cards -->
+<section class="pricing-section">
+  <div class="pricing-container">
+    <div class="pricing-grid">
+      <div class="pricing-card"
+           *ngFor="let plan of plans"
+           [class.highlighted]="plan.highlighted">
+
+        <div class="card-badge" *ngIf="plan.highlighted">
+          Le plus populaire
+        </div>
+
+        <div class="card-header">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          <p class="plan-description">{{ plan.description }}</p>
+
+          <div class="plan-price">
+            <span class="price-amount" *ngIf="plan.name !== 'Enterprise'">
+              {{ getPrice(plan) }}€
+            </span>
+            <span class="price-amount custom" *ngIf="plan.name === 'Enterprise'">
+              Sur devis
+            </span>
+            <span class="price-period" *ngIf="plan.name !== 'Enterprise'">
+              / {{ isYearly ? 'mois (facturé annuellement)' : 'mois' }}
+            </span>
+          </div>
+
+          <div class="yearly-savings" *ngIf="isYearly && getSavings(plan) > 0">
+            Économisez {{ getSavings(plan) }}% sur l'année
+          </div>
+        </div>
+
+        <button class="plan-cta"
+                [class.primary]="plan.highlighted"
+                (click)="selectPlan(plan)">
+          {{ plan.cta }}
+        </button>
+
+        <div class="card-features">
+          <div class="features-list">
+            <div class="feature-item" *ngFor="let feature of plan.features">
+              <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span>{{ feature }}</span>
+            </div>
+          </div>
+
+          <div class="limitations-list" *ngIf="plan.limitations && plan.limitations.length > 0">
+            <div class="limitation-item" *ngFor="let limitation of plan.limitations">
+              <svg class="cross-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+              <span>{{ limitation }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Section -->
+<section class="trust-section">
+  <div class="trust-container">
+    <div class="trust-content">
+      <h2>Essayez sans risque</h2>
+      <div class="trust-points">
+        <div class="trust-point">
+          <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <h4>14 jours d'essai gratuit</h4>
+            <p>Sans carte bancaire requise</p>
+          </div>
+        </div>
+        <div class="trust-point">
+          <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <div>
+            <h4>Paiement sécurisé</h4>
+            <p>Vos données sont protégées</p>
+          </div>
+        </div>
+        <div class="trust-point">
+          <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <div>
+            <h4>Annulation facile</h4>
+            <p>Sans engagement, aucune pénalité</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="faq-section">
+  <div class="faq-container">
+    <div class="section-header">
+      <h2>Questions fréquentes</h2>
+      <p>Vous avez des questions ? Nous avons les réponses</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item" *ngFor="let faq of faqs">
+        <h4 class="faq-question">{{ faq.question }}</h4>
+        <p class="faq-answer">{{ faq.answer }}</p>
+      </div>
+    </div>
+
+    <div class="faq-cta">
+      <p>Vous ne trouvez pas de réponse à votre question ?</p>
+      <button class="btn-contact" routerLink="/contact">
+        Contactez-nous
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>BookingPro</span>
+        </div>
+        <p class="footer-tagline">La solution de gestion de rendez-vous pour professionnels</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Produit</h4>
+          <a routerLink="/features">Fonctionnalités</a>
+          <a routerLink="/pricing">Tarifs</a>
+          <a routerLink="/how-it-works">Comment ça marche</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Support</h4>
+          <a routerLink="/contact">Contact</a>
+          <a routerLink="/pricing" fragment="faq">FAQ</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Légal</h4>
+          <a routerLink="/legal/mentions">Mentions légales</a>
+          <a routerLink="/legal/privacy">Politique de confidentialité</a>
+          <a routerLink="/legal/terms">CGU</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 BookingPro. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>

@@ -17,9 +17,24 @@ import { AuditLogsComponent } from './pages/admin/audit-logs.component';
 import { BusinessManagementComponent } from './pages/admin/business-management.component';
 import { BusinessGdprComponent } from './pages/business/gdpr/business-gdpr.component';
 import { BusinessResetPasswordComponent } from './pages/business/reset-password/business-reset-password.component';
+import { HomeComponent } from './landing/home/home.component';
+import { PricingComponent } from './landing/pricing/pricing.component';
+import { FeaturesComponent } from './landing/features/features.component';
+import { HowItWorksComponent } from './landing/how-it-works/how-it-works.component';
+import { ContactComponent } from './landing/contact/contact.component';
+import { MentionsComponent } from './landing/legal/mentions.component';
+import { PrivacyComponent } from './landing/legal/privacy.component';
+import { TermsComponent } from './landing/legal/terms.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', component: HomeComponent },
+  { path: 'pricing', component: PricingComponent },
+  { path: 'features', component: FeaturesComponent },
+  { path: 'how-it-works', component: HowItWorksComponent },
+  { path: 'contact', component: ContactComponent },
+  { path: 'legal/mentions', component: MentionsComponent },
+  { path: 'legal/privacy', component: PrivacyComponent },
+  { path: 'legal/terms', component: TermsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'verify-email', component: VerifyEmailComponent },

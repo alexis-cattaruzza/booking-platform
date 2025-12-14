@@ -1,0 +1,114 @@
+<app-navbar-landing></app-navbar-landing>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-container">
+    <span class="section-badge">Comment ça marche</span>
+    <h1 class="hero-title">Démarrez en 4 étapes simples</h1>
+    <p class="hero-description">
+      De l'inscription à la première réservation, lancez-vous en moins de 10 minutes
+    </p>
+  </div>
+</section>
+
+<!-- Steps Section -->
+<section class="steps-section">
+  <div class="steps-container">
+    <div class="steps-timeline">
+      <div class="step-item" *ngFor="let step of steps; let last = last">
+        <div class="step-indicator">
+          <div class="step-number">{{ step.number }}</div>
+          <div class="step-line" *ngIf="!last"></div>
+        </div>
+
+        <div class="step-content">
+          <h2 class="step-title">{{ step.title }}</h2>
+          <p class="step-description">{{ step.description }}</p>
+
+          <ul class="step-details">
+            <li *ngFor="let detail of step.details">
+              <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span>{{ detail }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Video/Demo Section -->
+<section class="demo-section">
+  <div class="demo-container">
+    <h2>Découvrez BookingPro en action</h2>
+    <p class="demo-subtitle">Une interface simple et intuitive</p>
+
+    <div class="demo-placeholder">
+      <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <p>Démo vidéo disponible prochainement</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-container">
+    <div class="cta-content">
+      <h2 class="cta-title">Prêt à commencer ?</h2>
+      <p class="cta-description">
+        Créez votre compte gratuitement et commencez à gérer vos rendez-vous dès maintenant
+      </p>
+      <button class="btn-cta-primary" (click)="navigateToRegister()">
+        Créer mon compte gratuitement
+      </button>
+      <p class="cta-note">✓ Aucune carte bancaire requise  •  ✓ Configuration en 5 minutes</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>BookingPro</span>
+        </div>
+        <p class="footer-tagline">La solution de gestion de rendez-vous pour professionnels</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Produit</h4>
+          <a routerLink="/features">Fonctionnalités</a>
+          <a routerLink="/pricing">Tarifs</a>
+          <a routerLink="/how-it-works">Comment ça marche</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Support</h4>
+          <a routerLink="/contact">Contact</a>
+          <a routerLink="/pricing" fragment="faq">FAQ</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Légal</h4>
+          <a routerLink="/legal/mentions">Mentions légales</a>
+          <a routerLink="/legal/privacy">Politique de confidentialité</a>
+          <a routerLink="/legal/terms">CGU</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 BookingPro. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>

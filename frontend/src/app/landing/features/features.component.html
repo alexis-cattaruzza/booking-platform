@@ -1,0 +1,138 @@
+<app-navbar-landing></app-navbar-landing>
+
+<!-- Hero Section -->
+<section class="features-hero">
+  <div class="hero-container">
+    <span class="section-badge">Fonctionnalités</span>
+    <h1 class="hero-title">Tout pour gérer votre activité efficacement</h1>
+    <p class="hero-description">
+      Découvrez toutes les fonctionnalités qui font de BookingPro la solution la plus complète
+      pour la gestion de vos rendez-vous
+    </p>
+  </div>
+</section>
+
+<!-- Main Features -->
+<section class="main-features">
+  <div class="features-container">
+    <div class="features-grid">
+      <div class="feature-detail" *ngFor="let feature of mainFeatures; let i = index" [class.reverse]="i % 2 !== 0">
+        <div class="feature-visual">
+          <div class="feature-icon-large">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ng-container [ngSwitch]="feature.icon">
+                <path *ngSwitchCase="'calendar'" stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path *ngSwitchCase="'bell'" stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <path *ngSwitchCase="'users'" stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path *ngSwitchCase="'chart'" stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path *ngSwitchCase="'shield'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <path *ngSwitchCase="'smartphone'" stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </ng-container>
+            </svg>
+          </div>
+        </div>
+
+        <div class="feature-content">
+          <h2 class="feature-title">{{ feature.title }}</h2>
+          <p class="feature-description">{{ feature.description }}</p>
+
+          <ul class="benefits-list">
+            <li *ngFor="let benefit of feature.benefits">
+              <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span>{{ benefit }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Additional Features Grid -->
+<section class="additional-features">
+  <div class="features-container">
+    <div class="section-header">
+      <h2>Et bien plus encore...</h2>
+      <p>Découvrez toutes les fonctionnalités organisées par catégorie</p>
+    </div>
+
+    <div class="additional-grid">
+      <div class="category-card" *ngFor="let category of additionalFeatures">
+        <h3 class="category-title">{{ category.category }}</h3>
+        <ul class="category-list">
+          <li *ngFor="let item of category.items">
+            <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-container">
+    <div class="cta-content">
+      <h2 class="cta-title">Prêt à découvrir toutes ces fonctionnalités ?</h2>
+      <p class="cta-description">
+        Essayez gratuitement pendant 14 jours, sans carte bancaire
+      </p>
+      <div class="cta-buttons">
+        <button class="btn-cta-primary" (click)="navigateToRegister()">
+          Commencer gratuitement
+        </button>
+        <button class="btn-cta-secondary" (click)="navigateToPricing()">
+          Voir les tarifs
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>BookingPro</span>
+        </div>
+        <p class="footer-tagline">La solution de gestion de rendez-vous pour professionnels</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Produit</h4>
+          <a routerLink="/features">Fonctionnalités</a>
+          <a routerLink="/pricing">Tarifs</a>
+          <a routerLink="/how-it-works">Comment ça marche</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Support</h4>
+          <a routerLink="/contact">Contact</a>
+          <a routerLink="/pricing" fragment="faq">FAQ</a>
+        </div>
+
+        <div class="footer-column">
+          <h4>Légal</h4>
+          <a routerLink="/legal/mentions">Mentions légales</a>
+          <a routerLink="/legal/privacy">Politique de confidentialité</a>
+          <a routerLink="/legal/terms">CGU</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 BookingPro. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>

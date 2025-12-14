@@ -1,0 +1,361 @@
+// Hero
+.hero {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  padding: 6rem 1.5rem 4rem;
+  text-align: center;
+}
+
+.hero-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+// Steps
+.steps-section {
+  padding: 6rem 1.5rem;
+  background: white;
+}
+
+.steps-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.steps-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3rem;
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .step-number {
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    flex-shrink: 0;
+  }
+
+  .step-line {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(180deg, #4f46e5 0%, transparent 100%);
+    margin-top: 1rem;
+  }
+}
+
+.step-content {
+  padding-top: 0.5rem;
+
+  .step-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .step-description {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.6;
+  }
+
+  .step-details {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 1rem;
+      color: #374151;
+
+      .check-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: #10b981;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+      }
+
+      span {
+        line-height: 1.6;
+      }
+    }
+  }
+}
+
+// Demo Section
+.demo-section {
+  padding: 6rem 1.5rem;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.demo-container {
+  max-width: 1280px;
+  margin: 0 auto;
+
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .demo-subtitle {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin: 0 0 3rem 0;
+  }
+}
+
+.demo-placeholder {
+  max-width: 900px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
+  border-radius: 1.5rem;
+  border: 2px dashed #4f46e5;
+
+  .play-icon {
+    width: 5rem;
+    height: 5rem;
+    color: #4f46e5;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+// CTA Section
+.cta-section {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  padding: 5rem 1.5rem;
+}
+
+.cta-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-content {
+  text-align: center;
+
+  .cta-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 1rem 0;
+  }
+
+  .cta-description {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 2.5rem 0;
+    line-height: 1.6;
+  }
+
+  .btn-cta-primary {
+    padding: 1.25rem 2.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e1b4b;
+    background: white;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.5rem;
+
+    &:hover {
+      background: #f9fafb;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .cta-note {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+}
+
+// Footer
+.footer {
+  background: #111827;
+  padding: 3rem 1.5rem 2rem;
+  color: #9ca3af;
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.footer-brand {
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      color: #4f46e5;
+    }
+
+    span {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+    }
+  }
+
+  .footer-tagline {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.footer-column {
+  h4 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  a {
+    display: block;
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #4f46e5;
+    }
+  }
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  border-top: 1px solid #374151;
+  text-align: center;
+
+  p {
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .step-item {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .step-indicator {
+    flex-direction: row;
+    align-items: flex-start;
+
+    .step-line {
+      width: 100%;
+      height: 2px;
+      margin-top: 0;
+      margin-left: 1rem;
+    }
+  }
+
+  .step-content .step-title {
+    font-size: 1.5rem;
+  }
+
+  .demo-container h2 {
+    font-size: 2rem;
+  }
+
+  .cta-title {
+    font-size: 2rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+}
