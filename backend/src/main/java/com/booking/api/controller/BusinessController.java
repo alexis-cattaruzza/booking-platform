@@ -1,5 +1,6 @@
 package com.booking.api.controller;
 
+import com.booking.api.dto.request.ChangePasswordRequest;
 import com.booking.api.dto.request.UpdateBusinessRequest;
 import com.booking.api.dto.response.BusinessResponse;
 import com.booking.api.dto.response.ServiceResponse;
@@ -68,5 +69,18 @@ public class BusinessController {
     public ResponseEntity<BusinessResponse> cancelDeletion() {
         log.info("POST /api/businesses/cancel-deletion");
         return ResponseEntity.ok(businessService.cancelBusinessDeletion());
+    }
+
+    /**
+     * POST /api/businesses/change-password
+     * Change le mot de passe du business connecté
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        log.info("POST /api/businesses/change-password");
+        businessService.changePassword(request);
+        return ResponseEntity.ok().body(java.util.Map.of(
+                "message", "Mot de passe modifié avec succès"
+        ));
     }
 }

@@ -1,5 +1,6 @@
 package com.booking.api.service;
 
+import com.booking.api.dto.request.ChangePasswordRequest;
 import com.booking.api.dto.request.UpdateBusinessRequest;
 import com.booking.api.dto.response.BusinessResponse;
 import com.booking.api.dto.response.ServiceResponse;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class BusinessService {
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
     private final ServiceRepository serviceRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Récupère le business de l'utilisateur connecté
@@ -195,5 +198,28 @@ public class BusinessService {
                 .updatedAt(business.getUpdatedAt())
                 .deletedAt(business.getDeletedAt())
                 .build();
+    }
+
+    /**
+     * Change password for authenticated business user
+     */
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Changing password for user: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Le mot de passe actuel est incorrect");
+        }
+
+        // Update password
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        log.info("Password changed successfully for user: {}", email);
     }
 }
