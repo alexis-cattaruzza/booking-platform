@@ -10,6 +10,7 @@ import { SchedulesManagementComponent } from '../../components/schedules-managem
 import { AppointmentsManagementComponent } from '../../components/appointments-management/appointments-management.component';
 import { VacationManagementComponent } from '../admin/vacation-management.component';
 import { DeletionBannerComponent } from '../../shared/deletion-banner/deletion-banner.component';
+import { UserMenuComponent } from '../../shared/user-menu/user-menu.component';
 import { ServiceService } from '../../services/service.service';
 import { BusinessService } from '../../services/business.service';
 import { Service, Business } from '../../models/business.model';
@@ -19,7 +20,7 @@ type TabType = 'overview' | 'profile' | 'services' | 'schedules' | 'appointments
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent, VacationManagementComponent, DeletionBannerComponent],
+  imports: [CommonModule, RouterModule, BusinessProfileComponent, ServicesManagementComponent, SchedulesManagementComponent, AppointmentsManagementComponent, VacationManagementComponent, DeletionBannerComponent, UserMenuComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

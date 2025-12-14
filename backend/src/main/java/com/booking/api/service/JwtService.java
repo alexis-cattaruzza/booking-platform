@@ -82,6 +82,10 @@ public class JwtService {
         long expiration
     ) {
         extraClaims.put("jti", UUID.randomUUID().toString());
+        // Add authorities (roles) to JWT claims for proper authorization
+        extraClaims.put("authorities", userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .toList());
         return Jwts
                 .builder()
                 .claims(extraClaims)

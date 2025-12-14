@@ -1,6 +1,7 @@
 package com.booking.api.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -59,7 +60,7 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints publics
+                        // Endpoints publics (most specific first)
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/booking/**",
@@ -67,13 +68,16 @@ public class SecurityConfig {
                                 "/api/businesses/*/services",
                                 "/api/businesses/*/holidays",
                                 "/api/businesses/*",
-                                "/actuator/health", // Only health endpoint public
+                                "/actuator/health",
                                 "/error"
                         ).permitAll()
+                        // Business GDPR endpoints - require ROLE_BUSINESS
+                        .requestMatchers("/api/businesses/gdpr/**").hasAuthority("ROLE_BUSINESS")
+                        // Other business endpoints - require ROLE_BUSINESS
+                        .requestMatchers("/api/businesses/**").hasAuthority("ROLE_BUSINESS")
                         // Actuator endpoints secured
                         .requestMatchers("/actuator/**").authenticated()
-                        // Endpoints protégés
-                        .requestMatchers("/api/businesses/**").hasAuthority("ROLE_BUSINESS")
+                        // Other protected endpoints
                         .requestMatchers("/api/services/**").hasAuthority("ROLE_BUSINESS")
                         .requestMatchers("/api/schedules/**").hasAuthority("ROLE_BUSINESS")
                         .requestMatchers("/api/appointments/**").hasAuthority("ROLE_BUSINESS")

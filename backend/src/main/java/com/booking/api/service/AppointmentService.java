@@ -212,7 +212,8 @@ public class AppointmentService {
     @Transactional
     @CacheEvict(value = "availability", allEntries = true)
     public void cancelAppointmentByBusiness(UUID appointmentId, String cancellationReason, UUID businessId) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
+        // Load appointment with all relations to avoid lazy loading issues in async email
+        Appointment appointment = appointmentRepository.findByIdWithRelations(appointmentId)
                 .orElseThrow(() -> new NotFoundException("Appointment not found"));
 
         // Verify that the appointment belongs to the business

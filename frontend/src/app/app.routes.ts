@@ -15,6 +15,8 @@ import { AdminLayoutComponent } from './pages/admin/admin-layout.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard.component';
 import { AuditLogsComponent } from './pages/admin/audit-logs.component';
 import { BusinessManagementComponent } from './pages/admin/business-management.component';
+import { BusinessGdprComponent } from './pages/business/gdpr/business-gdpr.component';
+import { BusinessResetPasswordComponent } from './pages/business/reset-password/business-reset-password.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -26,6 +28,21 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'business/dashboard',
+    component: DashboardComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'business/gdpr',
+    component: BusinessGdprComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'business/reset-password',
+    component: BusinessResetPasswordComponent,
     canActivate: [authGuard]
   },
   { path: 'book/:slug', component: BookingComponent },

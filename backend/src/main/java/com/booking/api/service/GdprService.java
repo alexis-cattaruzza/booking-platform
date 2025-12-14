@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +30,8 @@ public class GdprService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final AppointmentService appointmentService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
@@ -121,29 +124,61 @@ public class GdprService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime effectiveDate = now.plusDays(30);
 
+        // Get future appointments count
         List<Appointment> futureAppointments = appointmentRepository
                 .findByBusinessIdAndAppointmentDatetimeAfter(business.getId(), now);
+        int futureAppointmentsCount = futureAppointments.size();
 
-        for (Appointment apt : futureAppointments) {
-            apt.setStatus(Appointment.AppointmentStatus.CANCELLED);
-            appointmentRepository.save(apt);
-        }
-
+        // Mark business for deletion FIRST
+        // This allows the user to continue logging in and cancel the deletion
         business.setDeletedAt(now);
-        business.setEmail(business.getEmail() + ".deleted." + System.currentTimeMillis());
         businessRepository.save(business);
 
-        user.setEmail(user.getEmail() + ".deleted." + System.currentTimeMillis());
-        userRepository.save(user);
-
-        log.info("Business marked for deletion: {} (effective: {})", business.getBusinessName(), effectiveDate);
+        log.info("Business marked for deletion: {} (effective: {}). {} appointments to cancel. User can still login during grace period.",
+                business.getBusinessName(), effectiveDate, futureAppointmentsCount);
 
         return AccountDeletionResponse.builder()
-                .message("Votre compte sera supprimé dans 30 jours. Vous pouvez annuler cette demande.")
+                .message("Votre compte sera supprimé dans 30 jours. Vous pouvez encore vous connecter et annuler cette demande.")
                 .deletionDate(now)
                 .effectiveDate(effectiveDate)
                 .canRecover(true)
+                .futureAppointmentsCount(futureAppointmentsCount)
                 .build();
+    }
+
+    /**
+     * Cancel all future appointments for a business marked for deletion
+     * This method should be called AFTER the main transaction commits
+     */
+    public void cancelBusinessAppointments(UUID businessId) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Appointment> futureAppointments = appointmentRepository
+                .findByBusinessIdAndAppointmentDatetimeAfter(businessId, now);
+
+        log.info("Cancelling {} future appointments for business {}", futureAppointments.size(), businessId);
+
+        // Cancel each appointment using the service (which handles status, email, etc.)
+        for (Appointment apt : futureAppointments) {
+            // Skip if already cancelled or completed
+            if (apt.getStatus() == Appointment.AppointmentStatus.CANCELLED ||
+                apt.getStatus() == Appointment.AppointmentStatus.COMPLETED) {
+                log.debug("Skipping appointment {} - already {}", apt.getId(), apt.getStatus());
+                continue;
+            }
+
+            try {
+                appointmentService.cancelAppointmentByBusiness(
+                    apt.getId(),
+                    "Fermeture définitive du compte business - Tous les rendez-vous ont été annulés",
+                    businessId
+                );
+                log.debug("Cancelled appointment {} for business deletion", apt.getId());
+            } catch (Exception e) {
+                log.error("Failed to cancel appointment {}: {}", apt.getId(), e.getMessage(), e);
+            }
+        }
+
+        log.info("Appointment cancellation completed for business {}", businessId);
     }
 
     private AccountDeletionResponse deleteCustomerAccount(Customer customer) {
@@ -232,5 +267,64 @@ public class GdprService {
                 .price(service.getPrice() != null ? service.getPrice().doubleValue() : null)
                 .durationMinutes(service.getDurationMinutes())
                 .build();
+    }
+
+    /**
+     * Count future appointments between two dates
+     */
+    public int countFutureAppointments(java.util.UUID businessId, LocalDateTime start, LocalDateTime end) {
+        List<Appointment> appointments = appointmentRepository
+                .findByBusinessIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(businessId, start, end);
+        return appointments.size();
+    }
+
+    /**
+     * Send deletion confirmation email to business (call this AFTER the transaction commits)
+     */
+    public void sendBusinessDeletionEmail(String email, int futureAppointmentsCount) {
+        Business business = businessRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Business not found"));
+
+        LocalDateTime effectiveDate = business.getDeletedAt().plusDays(30);
+
+        // Send deletion confirmation email to business
+        try {
+            emailService.sendBusinessDeletionRequestEmail(
+                business.getEmail(),
+                business.getBusinessName(),
+                effectiveDate,
+                futureAppointmentsCount
+            );
+            log.info("Business deletion confirmation email sent to: {}", business.getBusinessName());
+        } catch (Exception e) {
+            log.error("Failed to send deletion confirmation email: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Cancel deletion request - restore business account
+     */
+    @Transactional
+    public void cancelDeletion(String email) {
+        log.info("Cancelling deletion request for: {}", email);
+
+        Business business = businessRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Business not found"));
+
+        if (business.getDeletedAt() == null) {
+            throw new BadRequestException("No deletion request found for this business");
+        }
+
+        // Restore business - clear deletion date
+        business.setDeletedAt(null);
+        businessRepository.save(business);
+
+        log.info("Deletion cancelled successfully for business: {}", business.getBusinessName());
+
+        // Send cancellation confirmation email to business
+        emailService.sendBusinessDeletionCancellationEmail(
+            business.getEmail(),
+            business.getBusinessName()
+        );
     }
 }

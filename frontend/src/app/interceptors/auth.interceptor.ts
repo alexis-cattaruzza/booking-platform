@@ -22,9 +22,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isPublicEndpoint = publicEndpoints.some(endpoint => req.url.includes(endpoint));
 
   // Special case: /api/businesses/{slug} and /api/businesses/{slug}/services are public
-  // but /api/businesses/me is PROTECTED
+  // but /api/businesses/me, /api/businesses/gdpr/**, and /api/businesses/change-password are PROTECTED
   const isPublicBusinessEndpoint = req.url.includes('/api/businesses/') &&
                                     !req.url.includes('/api/businesses/me') &&
+                                    !req.url.includes('/api/businesses/gdpr') &&
+                                    !req.url.includes('/api/businesses/change-password') &&
+                                    !req.url.includes('/api/businesses/cancel-deletion') &&
                                     !req.url.endsWith('/api/businesses');
 
   // Add token to all PROTECTED endpoints (default behavior for security)

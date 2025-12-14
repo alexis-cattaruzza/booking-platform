@@ -574,6 +574,113 @@ public class EmailService {
     }
 
     /**
+     * GDPR: Send account deletion request confirmation email to business
+     */
+    @Async
+    public void sendBusinessDeletionRequestEmail(String businessEmail, String businessName, LocalDateTime effectiveDate, int futureAppointmentsCount) {
+        try {
+            String subject = "Demande de suppression de votre compte business";
+            String content = buildBusinessDeletionRequestEmail(businessName, effectiveDate, futureAppointmentsCount);
+
+            sendEmail(businessEmail, subject, content);
+
+            log.info("Business deletion request email sent to: {}", businessEmail);
+        } catch (Exception e) {
+            log.error("Failed to send business deletion request email to {}: {}", businessEmail, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * GDPR: Send deletion cancellation confirmation email to business
+     */
+    @Async
+    public void sendBusinessDeletionCancellationEmail(String businessEmail, String businessName) {
+        try {
+            String subject = "Annulation de la suppression de votre compte";
+            String content = buildBusinessDeletionCancellationEmail(businessName);
+
+            sendEmail(businessEmail, subject, content);
+
+            log.info("Business deletion cancellation email sent to: {}", businessEmail);
+        } catch (Exception e) {
+            log.error("Failed to send business deletion cancellation email to {}: {}", businessEmail, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Build business deletion request email content
+     */
+    private String buildBusinessDeletionRequestEmail(String businessName, LocalDateTime effectiveDate, int futureAppointmentsCount) {
+        String effectiveDateStr = effectiveDate.format(DATE_FORMATTER);
+        String appointmentsMessage = futureAppointmentsCount > 0
+            ? "<div style='background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;'>" +
+              "  <p style='margin: 0 0 5px 0; font-weight: bold; color: #92400e;'>⚠️ Rendez-vous affectés</p>" +
+              "  <p style='margin: 0; color: #78350f; font-size: 14px;'>" +
+              "    " + futureAppointmentsCount + " rendez-vous programmé" + (futureAppointmentsCount > 1 ? "s" : "") + " " +
+              "    dans les 30 prochains jours " + (futureAppointmentsCount > 1 ? "ont" : "a") + " été annulé" + (futureAppointmentsCount > 1 ? "s" : "") + ". " +
+              "    Vos clients ont été notifiés par email." +
+              "  </p>" +
+              "</div>"
+            : "";
+
+        return buildEmailTemplate(
+            "Demande de suppression de compte",
+            businessName,
+            "<div style='background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #991b1b;'><strong>Votre demande de suppression a été enregistrée</strong></p>" +
+            "</div>" +
+            "<p>Nous avons bien reçu votre demande de suppression de compte business.</p>" +
+            "<div style='background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 5px 0;'><strong>Date de suppression définitive :</strong> " + effectiveDateStr + "</p>" +
+            "  <p style='margin: 5px 0;'><strong>Période de rétractation :</strong> 30 jours</p>" +
+            "</div>" +
+            appointmentsMessage +
+            "<h3 style='color: #1f2937; margin-top: 25px;'>Que se passe-t-il maintenant ?</h3>" +
+            "<ul style='color: #4b5563; line-height: 1.8;'>" +
+            "  <li>Vous pouvez continuer à vous connecter à votre compte pendant 30 jours</li>" +
+            "  <li>Vous pouvez <strong>annuler cette demande à tout moment</strong> depuis votre tableau de bord ou la page RGPD</li>" +
+            "  <li>Après 30 jours, votre compte et toutes vos données seront définitivement supprimés</li>" +
+            "</ul>" +
+            "<div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #166534;'><strong>💡 Vous avez changé d'avis ?</strong></p>" +
+            "  <p style='margin: 5px 0 0 0; color: #166534; font-size: 14px;'>" +
+            "    Connectez-vous à votre tableau de bord et accédez à la page \"Données & Confidentialité\" pour annuler la suppression." +
+            "  </p>" +
+            "</div>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + baseUrl + "/business/gdpr' style='display: inline-block; padding: 12px 24px; background-color: #16a34a; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Annuler la suppression</a>" +
+            "</p>" +
+            "<p style='color: #6b7280; font-size: 14px; margin-top: 30px;'>Si vous n'avez pas demandé cette suppression, veuillez nous contacter immédiatement.</p>"
+        );
+    }
+
+    /**
+     * Build business deletion cancellation email content
+     */
+    private String buildBusinessDeletionCancellationEmail(String businessName) {
+        return buildEmailTemplate(
+            "Annulation de la suppression confirmée",
+            businessName,
+            "<div style='background-color: #dcfce7; border-left: 4px solid #16a34a; padding: 15px; margin: 20px 0;'>" +
+            "  <p style='margin: 0; color: #166534;'><strong>✓ Votre compte reste actif !</strong></p>" +
+            "  <p style='margin: 5px 0 0 0; color: #166534; font-size: 14px;'>Votre demande de suppression a été annulée avec succès.</p>" +
+            "</div>" +
+            "<p>Nous sommes ravis de vous garder parmi nous ! Votre compte business est de nouveau actif et tous vos services restent disponibles.</p>" +
+            "<h3 style='color: #1f2937; margin-top: 25px;'>Que s'est-il passé ?</h3>" +
+            "<ul style='color: #4b5563; line-height: 1.8;'>" +
+            "  <li>Votre demande de suppression a été <strong>annulée</strong></li>" +
+            "  <li>Votre compte et toutes vos données sont <strong>préservés</strong></li>" +
+            "  <li>Vos services restent accessibles à vos clients</li>" +
+            "  <li>Vous pouvez continuer à gérer vos rendez-vous normalement</li>" +
+            "</ul>" +
+            "<p style='text-align: center; margin: 30px 0;'>" +
+            "  <a href='" + baseUrl + "/business/dashboard' style='display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>Accéder à mon tableau de bord</a>" +
+            "</p>" +
+            "<p style='color: #6b7280; font-size: 14px; margin-top: 30px;'>Merci de continuer à faire confiance à notre plateforme !</p>"
+        );
+    }
+
+    /**
      * Build email template with consistent design
      */
     private String buildEmailTemplate(String title, String customerName, String content) {
