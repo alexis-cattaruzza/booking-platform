@@ -2,6 +2,7 @@ package com.booking.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -10,8 +11,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.mockito.Mockito;
 
-@SpringBootTest
+@SpringBootTest()
 @ActiveProfiles("test")
+@EnableAutoConfiguration(exclude = {
+        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class
+})
 class BookingApiApplicationTests {
 
     @Autowired
@@ -36,5 +41,6 @@ class BookingApiApplicationTests {
         RedisTemplate<String, String> redisTemplate() {
             return Mockito.mock(RedisTemplate.class);
         }
+
     }
 }

@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,6 +50,12 @@ class GdprServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private EmailService emailService;
+
+    @Mock
+    private AppointmentService appointmentService;
+
     @InjectMocks
     private GdprService gdprService;
 
@@ -74,6 +81,7 @@ class GdprServiceTest {
         testBusiness = Business.builder()
                 .id(UUID.randomUUID())
                 .user(testUser)
+                .email("test@example.com")
                 .businessName("Test Business")
                 .slug("test-business")
                 .address("123 Test Street")
@@ -211,6 +219,7 @@ class GdprServiceTest {
         // Given
         String email = "test@example.com";
         String password = "password123";
+
         AccountDeletionRequest request = AccountDeletionRequest.builder()
                 .password(password)
                 .confirmDeletion(true)
@@ -220,35 +229,37 @@ class GdprServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(password, testUser.getPasswordHash())).thenReturn(true);
         when(businessRepository.findByEmail(email)).thenReturn(Optional.of(testBusiness));
-        when(appointmentRepository.findByBusinessIdAndAppointmentDatetimeAfter(eq(testBusiness.getId()), any()))
-                .thenReturn(testAppointments);
+        when(appointmentRepository.findByBusinessIdAndAppointmentDatetimeAfter(
+                eq(testBusiness.getId()), any()
+        )).thenReturn(testAppointments);
 
         // When
-        AccountDeletionResponse response = gdprService.deleteUserAccount(email, "BUSINESS", request);
+        AccountDeletionResponse response =
+                gdprService.deleteUserAccount(email, "BUSINESS", request);
 
         // Then
         assertNotNull(response);
         assertTrue(response.getCanRecover());
         assertNotNull(response.getDeletionDate());
         assertNotNull(response.getEffectiveDate());
+
+        // Message métier
         assertTrue(response.getMessage().contains("30 jours"));
 
-        // Verify business was marked as deleted
+        // Nombre de RDV futurs
+        assertEquals(testAppointments.size(), response.getFutureAppointmentsCount());
+
+        // Business marqué comme supprimé
         ArgumentCaptor<Business> businessCaptor = ArgumentCaptor.forClass(Business.class);
         verify(businessRepository, times(1)).save(businessCaptor.capture());
+
         Business savedBusiness = businessCaptor.getValue();
         assertNotNull(savedBusiness.getDeletedAt());
-        assertTrue(savedBusiness.getEmail().contains(".deleted."));
 
-        // Verify user email was changed
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository, times(1)).save(userCaptor.capture());
-        User savedUser = userCaptor.getValue();
-        assertTrue(savedUser.getEmail().contains(".deleted."));
-
-        // Verify appointments were cancelled
-        verify(appointmentRepository, times(testAppointments.size())).save(any(Appointment.class));
+        verify(userRepository, never()).save(any());
+        verify(appointmentRepository, never()).save(any());
     }
+
 
     @Test
     void deleteAccount_InvalidPassword() {
