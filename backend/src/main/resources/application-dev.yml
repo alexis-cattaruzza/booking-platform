@@ -29,10 +29,10 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       ssl:
-        enabled: ${REDIS_SSL}
+        enabled: true
       timeout: 2000
       repositories:
-        enabled: false  # Disable Redis repositories (we only use it for caching)
+        enabled: false
 
   cache:
     type: redis
